@@ -20,23 +20,12 @@ export function MainScreen({ user, isSubmitting, onLogout }: MainScreenProps) {
   return (
     <View style={styles.container}>
       <AppHeader onOpenMenu={openMenu}/>
-      <SideMenu visible={menuVisible} onClose={closeMenu}></SideMenu>
+      <SideMenu visible={menuVisible} onClose={closeMenu} onLogout={onLogout}></SideMenu>
       <View style={styles.content}>
         <Text style={styles.eyebrow}>Home</Text>
         <Text style={styles.greeting}>Hello, {user.name}</Text>
         <Text style={styles.subtitle}>Your Moneyfy main page is ready.</Text>
 
-        <Pressable
-          onPress={onLogout}
-          disabled={isSubmitting}
-          style={[styles.logoutButton, isSubmitting && styles.buttonDisabled]}
-        >
-          {isSubmitting ? (
-            <ActivityIndicator color="#ffffff" />
-          ) : (
-            <Text style={styles.logoutButtonText}>Logout</Text>
-          )}
-        </Pressable>
       </View>
     </View>
   );

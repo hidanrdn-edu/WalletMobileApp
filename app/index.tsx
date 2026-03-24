@@ -69,7 +69,6 @@ export default function IndexScreen() {
     return (
       <MainScreen
         user={currentUser}
-        isSubmitting={isSubmitting}
         onLogout={() => void handleLogout()}
       />
     );
