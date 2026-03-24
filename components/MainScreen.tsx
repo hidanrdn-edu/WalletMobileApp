@@ -1,13 +1,12 @@
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
-import {useState} from "react"
+import { StyleSheet, Text, View } from "react-native";
+import { useState } from "react";
 
 import AppHeader from "@/components/AppHeader";
-import SideMenu from "@/components/SideMenu"
+import SideMenu from "@/components/SideMenu";
 import type { User } from "@/db/schema";
 
 type MainScreenProps = {
   user: User;
-  isSubmitting: boolean;
   onLogout: () => void;
 };
 
@@ -19,8 +18,8 @@ export function MainScreen({ user, onLogout }: MainScreenProps) {
 
   return (
     <View style={styles.container}>
-      <AppHeader onOpenMenu={openMenu}/>
-      <SideMenu visible={menuVisible} onClose={closeMenu} onLogout={onLogout} user={user}></SideMenu>
+      <AppHeader onOpenMenu={openMenu} />
+      <SideMenu visible={menuVisible} onClose={closeMenu} onLogout={onLogout} user={user} />
       <View style={styles.content}>
         <Text style={styles.eyebrow}>Home</Text>
         <Text style={styles.greeting}>Hello, {user.name}</Text>
@@ -59,21 +58,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
     color: "#49625a",
-  },
-  logoutButton: {
-    marginTop: 24,
-    alignSelf: "flex-start",
-    borderRadius: 18,
-    paddingHorizontal: 22,
-    paddingVertical: 14,
-    backgroundColor: "#f97316",
-  },
-  logoutButtonText: {
-    fontSize: 15,
-    fontWeight: "800",
-    color: "#ffffff",
-  },
-  buttonDisabled: {
-    opacity: 0.55,
   },
 });
