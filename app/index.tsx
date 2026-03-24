@@ -76,7 +76,7 @@ export default function IndexScreen() {
   }
 
   return (
-    <LinearGradient colors={["#f8fff8", "#eef8ff", "#fdf6ea"]} style={styles.background}>
+    <LinearGradient colors={["#16a34a", "#22c55e", "#86efac"]} style={styles.background}>
       <View style={styles.safeArea}>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
   },
   safeArea: {
     flex: 1,
-    marginTop: 40
+    marginTop: 40,
   },
   keyboardContainer: {
     flex: 1,
