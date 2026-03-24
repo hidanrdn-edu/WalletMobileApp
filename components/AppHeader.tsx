@@ -7,7 +7,7 @@ export default function AppHeader({ onOpenMenu }: { onOpenMenu: () => void }) {
     <Appbar.Header style={{ backgroundColor: theme.colors.background, elevation: 0 }}>
       <Appbar.Action icon="menu" onPress={onOpenMenu} />
       <Appbar.Content title="Гаманець" />
-      <Appbar.Action icon="magnify" onPress={() => console.log('Пошук')} />
+      
     </Appbar.Header>
   );
 }

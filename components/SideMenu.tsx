@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { Animated, Dimensions, Modal, StyleSheet, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Animated, Dimensions, Modal, StyleSheet, TouchableOpacity, View, Easing } from 'react-native';
 import { Avatar, Drawer, Text, useTheme } from 'react-native-paper';
 
 const { width } = Dimensions.get('window');
@@ -13,20 +13,25 @@ export default function SideMenu({ visible, onClose }: SideMenuProps) {
   const theme = useTheme();
   
   const slideAnim = useRef(new Animated.Value(-width)).current;
+  const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
     if (visible) {
+      setModalVisible(true); 
+      slideAnim.setValue(-width); 
       Animated.timing(slideAnim, {
         toValue: 0,
-        duration: 300,
+        duration: 700,
         useNativeDriver: true,
+        easing: Easing.out(Easing.cubic),
       }).start();
     } else {
       Animated.timing(slideAnim, {
         toValue: -width,
-        duration: 250,
+        duration: 550,
         useNativeDriver: true,
-      }).start();
+        easing: Easing.in(Easing.cubic),
+      }).start(() => setModalVisible(false));
     }
   }, [visible]);
 
