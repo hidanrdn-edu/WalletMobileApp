@@ -1,16 +1,18 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Animated, Dimensions, Easing, Modal, StyleSheet, TouchableOpacity, View } from "react-native";
 import { Avatar, Drawer, Text, useTheme } from "react-native-paper";
+import type { User } from "@/db/schema";
 
 const { width } = Dimensions.get("window");
 
 interface SideMenuProps {
+  user: User;
   visible: boolean;
   onClose: () => void;
   onLogout: () => void;
 }
 
-export default function SideMenu({ visible, onClose, onLogout }: SideMenuProps) {
+export default function SideMenu({ visible, onClose, onLogout, user }: SideMenuProps) {
   const theme = useTheme();
   const slideAnim = useRef(new Animated.Value(-width)).current;
   const [modalVisible, setModalVisible] = useState(false);
@@ -30,7 +32,7 @@ export default function SideMenu({ visible, onClose, onLogout }: SideMenuProps) 
 
     Animated.timing(slideAnim, {
       toValue: -width,
-      duration: 550,
+      duration: 450,
       useNativeDriver: true,
       easing: Easing.in(Easing.cubic),
     }).start(() => setModalVisible(false));
@@ -56,10 +58,10 @@ export default function SideMenu({ visible, onClose, onLogout }: SideMenuProps) 
             <Avatar.Icon size={56} icon="account" style={{ backgroundColor: theme.colors.primary }} />
             <View style={styles.userDetails}>
               <Text variant="titleMedium" style={styles.userName}>
-                Mamont Mamontovich
+                {user.name}
               </Text>
               <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
-                mamont67@gmail.com
+                {user.email}
               </Text>
             </View>
           </View>

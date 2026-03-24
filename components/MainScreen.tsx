@@ -11,7 +11,7 @@ type MainScreenProps = {
   onLogout: () => void;
 };
 
-export function MainScreen({ user, isSubmitting, onLogout }: MainScreenProps) {
+export function MainScreen({ user, onLogout }: MainScreenProps) {
   const [menuVisible, setMenuVisible] = useState(false);
 
   const openMenu = () => setMenuVisible(true);
@@ -20,12 +20,11 @@ export function MainScreen({ user, isSubmitting, onLogout }: MainScreenProps) {
   return (
     <View style={styles.container}>
       <AppHeader onOpenMenu={openMenu}/>
-      <SideMenu visible={menuVisible} onClose={closeMenu} onLogout={onLogout}></SideMenu>
+      <SideMenu visible={menuVisible} onClose={closeMenu} onLogout={onLogout} user={user}></SideMenu>
       <View style={styles.content}>
         <Text style={styles.eyebrow}>Home</Text>
         <Text style={styles.greeting}>Hello, {user.name}</Text>
         <Text style={styles.subtitle}>Your Moneyfy main page is ready.</Text>
-
       </View>
     </View>
   );
