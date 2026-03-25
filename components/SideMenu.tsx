@@ -1,7 +1,7 @@
+import { useRouter } from 'expo-router';
 import React, { useEffect, useRef } from 'react';
 import { Animated, Dimensions, Modal, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Avatar, Drawer, Text, useTheme } from 'react-native-paper';
-
 const { width } = Dimensions.get('window');
 
 interface SideMenuProps {
@@ -11,7 +11,7 @@ interface SideMenuProps {
 
 export default function SideMenu({ visible, onClose }: SideMenuProps) {
   const theme = useTheme();
-  
+  const router = useRouter();
   const slideAnim = useRef(new Animated.Value(-width)).current;
 
   useEffect(() => {
@@ -57,7 +57,7 @@ export default function SideMenu({ visible, onClose }: SideMenuProps) {
           </Drawer.Section>
 
           <Drawer.Section title="Налаштування" showDivider={false}>
-            <Drawer.Item icon="cog" label="Налаштування" onPress={onClose} />
+            <Drawer.Item icon="cog" label="Налаштування" onPress={() => {onClose(); router.push('/settings' as any ); }} />
             <Drawer.Item icon="logout" label="Вийти" onPress={onClose} />
           </Drawer.Section>
           
