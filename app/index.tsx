@@ -1,12 +1,14 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { useState } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from "react-native";
 
 import { LoginWindow } from "@/components/LoginWindow";
 import { MainScreen } from "@/components/MainScreen";
 import { RegistrationWindow } from "@/components/RegistrationWindow";
 import { useAuth } from "@/providers/AuthProvider";
 import { loginUser, logout, registerUser } from "@/services/auth";
+import WelcomeCard from "@/components/WelcomeCard"
+import { SafeAreaView } from "react-native-safe-area-context";
 
 type AuthMode = "register" | "login";
 
@@ -76,19 +78,14 @@ export default function IndexScreen() {
 
   return (
     <LinearGradient colors={["#16a34a", "#22c55e", "#86efac"]} style={styles.background}>
-      <View style={styles.safeArea}>
+      <SafeAreaView style={styles.safeArea}>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : undefined}
           style={styles.keyboardContainer}
         >
           <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-            <View style={styles.heroCard}>
-              <Text style={styles.eyebrow}>Moneyfy</Text>
-              <Text style={styles.title}>Sign up or log in to enter your wallet app.</Text>
-              <Text style={styles.subtitle}>
-                Take control of your money. Track, spend, and save smarter with MONEYFY!
-              </Text>
-            </View>
+
+            <WelcomeCard></WelcomeCard>
 
             {mode === "register" ? (
               <RegistrationWindow
@@ -123,7 +120,7 @@ export default function IndexScreen() {
             )}
           </ScrollView>
         </KeyboardAvoidingView>
-      </View>
+      </SafeAreaView>
     </LinearGradient>
   );
 }
@@ -134,7 +131,6 @@ const styles = StyleSheet.create({
   },
   safeArea: {
     flex: 1,
-    marginTop: 40,
   },
   keyboardContainer: {
     flex: 1,
@@ -143,30 +139,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 24,
     gap: 18,
-  },
-  heroCard: {
-    borderRadius: 28,
-    padding: 24,
-    backgroundColor: "rgba(16, 42, 36, 0.92)",
-  },
-  eyebrow: {
-    fontSize: 12,
-    fontWeight: "700",
-    letterSpacing: 1.5,
-    textTransform: "uppercase",
-    color: "#8ff0c9",
-  },
-  title: {
-    marginTop: 12,
-    fontSize: 30,
-    lineHeight: 36,
-    fontWeight: "800",
-    color: "#f9fffc",
-  },
-  subtitle: {
-    marginTop: 12,
-    fontSize: 15,
-    lineHeight: 22,
-    color: "#cfe7dd",
   },
 });

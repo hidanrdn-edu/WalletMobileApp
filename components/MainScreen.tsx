@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
 import { useState } from "react";
-
+import { SafeAreaView } from "react-native-safe-area-context";
 import AppHeader from "@/components/AppHeader";
 import SideMenu from "@/components/SideMenu";
 import type { User } from "@/db/schema";
@@ -17,7 +17,7 @@ export function MainScreen({ user, onLogout }: MainScreenProps) {
   const closeMenu = () => setMenuVisible(false);
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <AppHeader onOpenMenu={openMenu} />
       <SideMenu visible={menuVisible} onClose={closeMenu} onLogout={onLogout} user={user} />
       <View style={styles.content}>
@@ -25,7 +25,7 @@ export function MainScreen({ user, onLogout }: MainScreenProps) {
         <Text style={styles.greeting}>Hello, {user.name}</Text>
         <Text style={styles.subtitle}>Your Moneyfy main page is ready.</Text>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
