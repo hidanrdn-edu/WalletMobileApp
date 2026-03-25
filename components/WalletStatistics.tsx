@@ -2,19 +2,22 @@ import React from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { PieChart } from 'react-native-gifted-charts';
 import { Card, Icon, Surface, Text, useTheme } from 'react-native-paper';
+import { useAppColors } from '../hooks/useAppColors';
 
 export default function WalletStatistics() {
   const theme = useTheme();
-  const month = "Березень 2026";
-  const income = 2450.00;
-  const expense = 1820.50;
+  const colors = useAppColors(); 
+
+  const month = "Березень";
+  const income = 1200.00;
+  const expense = 820.00;
   const balance = income - expense;
 
   const pieData = [
-    { value: 850, color: '#FF6384', text: 'Житло' },
-    { value: 450, color: '#36A2EB', text: 'Продукти' },
-    { value: 320, color: '#FFCE56', text: 'Транспорт' },
-    { value: 200.5, color: '#4BC0C0', text: 'Розваги' },
+    { value: 450, color: colors.chart[0], text: 'Оренда' },
+    { value: 200, color: colors.chart[1], text: 'Їжа та напої' },
+    { value: 50, color: colors.chart[2], text: 'Транспорт' },
+    { value: 120, color: colors.chart[3], text: 'Розваги' },
   ];
 
   return (
@@ -30,32 +33,35 @@ export default function WalletStatistics() {
       </View>
 
       <View style={styles.row}>
-        <Surface style={[styles.widgetCard, { backgroundColor: theme.colors.surface }]} elevation={2}>
+        {/* Доходи */}
+        <Surface style={[styles.widgetCard, { backgroundColor: colors.cardBackground }]} elevation={2}>
           <View style={styles.widgetHeader}>
-            <View style={[styles.iconContainer, { backgroundColor: '#E8F5E9' }]}>
-              <Icon source="arrow-down-left" color="#4CAF50" size={24} />
+            <View style={[styles.iconContainer, { backgroundColor: colors.income.iconBg }]}>
+              <Icon source="arrow-down-left" color={colors.income.icon} size={24} />
             </View>
             <Text variant="labelLarge" style={{ color: theme.colors.onSurfaceVariant }}>Доходи</Text>
           </View>
-          <Text variant="titleLarge" style={[styles.widgetAmount, { color: '#4CAF50' }]}>
+          <Text variant="titleLarge" style={[styles.widgetAmount, { color: colors.income.text }]}>
             +€{income.toFixed(2)}
           </Text>
         </Surface>
 
-        <Surface style={[styles.widgetCard, { backgroundColor: theme.colors.surface }]} elevation={2}>
+        {/* Витрати */}
+        <Surface style={[styles.widgetCard, { backgroundColor: colors.cardBackground }]} elevation={2}>
           <View style={styles.widgetHeader}>
-            <View style={[styles.iconContainer, { backgroundColor: '#FFEBEE' }]}>
-              <Icon source="arrow-up-right" color="#F44336" size={24} />
+            <View style={[styles.iconContainer, { backgroundColor: colors.expense.iconBg }]}>
+              <Icon source="arrow-up-right" color={colors.expense.icon} size={24} />
             </View>
             <Text variant="labelLarge" style={{ color: theme.colors.onSurfaceVariant }}>Витрати</Text>
           </View>
-          <Text variant="titleLarge" style={[styles.widgetAmount, { color: '#F44336' }]}>
+          <Text variant="titleLarge" style={[styles.widgetAmount, { color: colors.expense.text }]}>
             -€{expense.toFixed(2)}
           </Text>
         </Surface>
       </View>
 
-      <Card style={[styles.chartCard, { backgroundColor: theme.colors.surface }]} mode="elevated">
+      {/* Графік */}
+      <Card style={[styles.chartCard, { backgroundColor: colors.cardBackground }]} mode="elevated">
         <Card.Content>
           <Text variant="titleMedium" style={{ color: theme.colors.onSurface, marginBottom: 16 }}>
             Структура витрат
@@ -67,6 +73,7 @@ export default function WalletStatistics() {
               innerRadius={65}
               radius={100}
               data={pieData}
+              innerCircleColor={colors.cardBackground}
               centerLabelComponent={() => (
                 <View style={{ justifyContent: 'center', alignItems: 'center' }}>
                   <Text variant="labelMedium" style={{ color: theme.colors.outline }}>Всього</Text>
@@ -80,7 +87,7 @@ export default function WalletStatistics() {
 
           <View style={styles.legendContainer}>
             {pieData.map((item, index) => (
-              <View key={index} style={styles.legendItem}>
+              <View key={index} style={[styles.legendItem, { borderBottomColor: theme.colors.surfaceVariant }]}>
                 <View style={styles.legendLeft}>
                   <View style={[styles.colorDot, { backgroundColor: item.color }]} />
                   <Text variant="bodyMedium" style={{ color: theme.colors.onSurface }}>
