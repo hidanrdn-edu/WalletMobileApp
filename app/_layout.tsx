@@ -1,7 +1,13 @@
+import { BillsProvider } from "@/context/bills-context";
 import { Stack } from "expo-router";
+import { PaperProvider } from "react-native-paper";
 
 export default function RootLayout() {
   return (
-      <Stack screenOptions={{headerShown: false}}/>
+    <PaperProvider>
+      <BillsProvider>
+        <Stack screenOptions={{ headerShown: false }} />
+      </BillsProvider>
+    </PaperProvider>
   );
 }
