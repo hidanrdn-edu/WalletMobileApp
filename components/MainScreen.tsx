@@ -1,13 +1,17 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { PieChart } from "react-native-gifted-charts";
-import { Card, Icon, Surface, Text, useTheme } from "react-native-paper";
+import { ActivityIndicator, Card, Icon, Surface, Text, useTheme } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import AppHeader from "@/components/AppHeader";
 import SideMenu from "@/components/SideMenu";
 import type { User } from "@/db/schema";
 import { useAppColors } from "@/hooks/useAppColors";
+import {
+  getMonthlyWalletStatistics,
+  type MonthlyWalletStatistics,
+} from "@/services/walletStatistics";
 
 type MainScreenProps = {
   user: User;
@@ -25,18 +29,53 @@ export function MainScreen({ user, onLogout }: MainScreenProps) {
   const theme = useTheme();
   const colors = useAppColors();
   const [menuVisible, setMenuVisible] = useState(false);
+  const [statistics, setStatistics] = useState<MonthlyWalletStatistics | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const monthLabel = "March 2026";
-  const income = 1200;
-  const expense = 820;
-  const balance = income - expense;
+  useEffect(() => {
+    let isCancelled = false;
 
-  const pieData = [
-    { value: 450, color: colors.chart[0], text: "Rent" },
-    { value: 200, color: colors.chart[1], text: "Food & Drinks" },
-    { value: 50, color: colors.chart[2], text: "Transport" },
-    { value: 120, color: colors.chart[3], text: "Entertainment" },
-  ];
+    async function loadStatistics() {
+      setIsLoading(true);
+      setErrorMessage(null);
+
+      try {
+        const nextStatistics = await getMonthlyWalletStatistics(user.id);
+
+        if (!isCancelled) {
+          setStatistics(nextStatistics);
+        }
+      } catch (error) {
+        if (!isCancelled) {
+          setErrorMessage(
+            error instanceof Error ? error.message : "Unable to load wallet statistics.",
+          );
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void loadStatistics();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [user.id]);
+
+  const monthLabel = statistics?.monthLabel ?? "";
+  const income = statistics?.income ?? 0;
+  const expense = statistics?.expense ?? 0;
+  const balance = statistics?.balance ?? 0;
+  const pieData = (statistics?.expenseBreakdown ?? []).map((item, index) => ({
+    value: item.value,
+    color: colors.chart[index % colors.chart.length],
+    text: item.label,
+  }));
+  const hasExpenseData = pieData.length > 0;
 
   const openMenu = () => setMenuVisible(true);
   const closeMenu = () => setMenuVisible(false);
@@ -101,50 +140,73 @@ export function MainScreen({ user, onLogout }: MainScreenProps) {
               Expense breakdown
             </Text>
 
-            <View style={styles.chartWrapper}>
-              <PieChart
-                donut
-                innerRadius={65}
-                radius={100}
-                data={pieData}
-                innerCircleColor={colors.cardBackground}
-                centerLabelComponent={() => (
-                  <View style={styles.chartCenter}>
-                    <Text variant="labelMedium" style={{ color: theme.colors.outline }}>
-                      Total
-                    </Text>
-                    <Text
-                      variant="titleMedium"
-                      style={{ color: theme.colors.onSurface, fontWeight: "bold" }}
-                    >
-                      {currencyFormatter.format(expense)}
-                    </Text>
-                  </View>
-                )}
-              />
-            </View>
-
-            <View style={styles.legendContainer}>
-              {pieData.map((item, index) => (
-                <View
-                  key={`${item.text}-${index}`}
-                  style={[styles.legendItem, { borderBottomColor: theme.colors.surfaceVariant }]}
-                >
-                  <View style={styles.legendLeft}>
-                    <View style={[styles.colorDot, { backgroundColor: item.color }]} />
-                    <Text variant="bodyMedium" style={{ color: theme.colors.onSurface }}>
-                      {item.text}
-                    </Text>
-                  </View>
-                  <Text
-                    variant="bodyMedium"
-                    style={{ color: theme.colors.onSurfaceVariant, fontWeight: "bold" }}
-                  >
-                    {currencyFormatter.format(item.value)}
-                  </Text>
+            {isLoading ? (
+              <View style={styles.stateContainer}>
+                <ActivityIndicator size="small" color={theme.colors.primary} />
+                <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+                  Loading current month statistics...
+                </Text>
+              </View>
+            ) : errorMessage ? (
+              <View style={styles.stateContainer}>
+                <Text variant="bodyMedium" style={{ color: theme.colors.error }}>
+                  {errorMessage}
+                </Text>
+              </View>
+            ) : hasExpenseData ? (
+              <>
+                <View style={styles.chartWrapper}>
+                  <PieChart
+                    donut
+                    innerRadius={65}
+                    radius={100}
+                    data={pieData}
+                    innerCircleColor={colors.cardBackground}
+                    centerLabelComponent={() => (
+                      <View style={styles.chartCenter}>
+                        <Text variant="labelMedium" style={{ color: theme.colors.outline }}>
+                          Total
+                        </Text>
+                        <Text
+                          variant="titleMedium"
+                          style={{ color: theme.colors.onSurface, fontWeight: "bold" }}
+                        >
+                          {currencyFormatter.format(expense)}
+                        </Text>
+                      </View>
+                    )}
+                  />
                 </View>
-              ))}
-            </View>
+
+                <View style={styles.legendContainer}>
+                  {pieData.map((item, index) => (
+                    <View
+                      key={`${item.text}-${index}`}
+                      style={[styles.legendItem, { borderBottomColor: theme.colors.surfaceVariant }]}
+                    >
+                      <View style={styles.legendLeft}>
+                        <View style={[styles.colorDot, { backgroundColor: item.color }]} />
+                        <Text variant="bodyMedium" style={{ color: theme.colors.onSurface }}>
+                          {item.text}
+                        </Text>
+                      </View>
+                      <Text
+                        variant="bodyMedium"
+                        style={{ color: theme.colors.onSurfaceVariant, fontWeight: "bold" }}
+                      >
+                        {currencyFormatter.format(item.value)}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              </>
+            ) : (
+              <View style={styles.stateContainer}>
+                <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+                  No expense transactions were found for this month yet.
+                </Text>
+              </View>
+            )}
           </Card.Content>
         </Card>
 
@@ -232,6 +294,12 @@ const styles = StyleSheet.create({
   },
   legendContainer: {
     marginTop: 16,
+  },
+  stateContainer: {
+    minHeight: 180,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 12,
   },
   legendItem: {
     flexDirection: "row",
