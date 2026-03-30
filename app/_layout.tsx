@@ -1,12 +1,12 @@
-import { PaperProvider } from "react-native-paper";
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
 import { Stack } from "expo-router";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { PaperProvider } from "react-native-paper";
 
+import { BillsProvider } from "@/context/bills-context";
 import { db } from "@/db/client";
 import migrations from "@/drizzle/migrations";
 import { AuthProvider, useAuth } from "@/providers/AuthProvider";
-import { BillsProvider } from "@/context/bills-context";
 
 
 export default function RootLayout() {

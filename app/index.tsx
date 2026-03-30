@@ -1,15 +1,13 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from "react-native";
-import AddBillSection from "@/components/add-bill";
-import { View } from "react-native";
 
 import { LoginWindow } from "@/components/LoginWindow";
 import { MainScreen } from "@/components/MainScreen";
 import { RegistrationWindow } from "@/components/RegistrationWindow";
+import WelcomeCard from "@/components/WelcomeCard";
 import { useAuth } from "@/providers/AuthProvider";
 import { loginUser, logout, registerUser } from "@/services/auth";
-import WelcomeCard from "@/components/WelcomeCard"
 import { SafeAreaView } from "react-native-safe-area-context";
 
 type AuthMode = "register" | "login";
@@ -143,7 +141,6 @@ const styles = StyleSheet.create({
     gap: 18,
   },
 });
-
 
 
 
