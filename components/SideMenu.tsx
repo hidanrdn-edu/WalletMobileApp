@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Animated, Dimensions, Easing, Modal, StyleSheet, TouchableOpacity, View } from "react-native";
 import { Avatar, Drawer, Text, useTheme } from "react-native-paper";
+import { useRouter } from "expo-router";
+
 import type { User } from "@/db/schema";
-import { useRouter } from 'expo-router';
 
 const { width } = Dimensions.get("window");
 
@@ -15,7 +16,6 @@ interface SideMenuProps {
 
 export default function SideMenu({ visible, onClose, onLogout, user }: SideMenuProps) {
   const theme = useTheme();
-
   const router = useRouter();
 
   const slideAnim = useRef(new Animated.Value(-width)).current;
@@ -71,14 +71,35 @@ export default function SideMenu({ visible, onClose, onLogout, user }: SideMenuP
           </View>
 
           <Drawer.Section style={styles.menuSection}>
-            <Drawer.Item icon="view-dashboard" label="Головна" active onPress={onClose} />
-            <Drawer.Item icon="wallet" label="Рахунки" onPress={onClose} />
+            <Drawer.Item
+              icon="view-dashboard"
+              label="Головна"
+              onPress={() => {
+                onClose();
+                router.push("/home" as any);
+              }}
+            />
+            <Drawer.Item
+              icon="wallet"
+              label="Рахунки"
+              onPress={() => {
+                onClose();
+                router.push("/bills" as any);
+              }}
+            />
             <Drawer.Item icon="format-list-bulleted" label="Транзакції" onPress={onClose} />
             <Drawer.Item icon="chart-pie" label="Статистика" onPress={onClose} />
           </Drawer.Section>
 
           <Drawer.Section title="Налаштування" showDivider={false}>
-            <Drawer.Item icon="cog" label="Налаштування" onPress={() => {onClose(); router.push('/settings' as any ); }} />
+            <Drawer.Item
+              icon="cog"
+              label="Налаштування"
+              onPress={() => {
+                onClose();
+                router.push("/settings" as any);
+              }}
+            />
             <Drawer.Item icon="logout" label="Вийти" onPress={handleLogoutPress} />
           </Drawer.Section>
         </Animated.View>

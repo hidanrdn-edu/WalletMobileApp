@@ -1,16 +1,14 @@
 import { LinearGradient } from "expo-linear-gradient";
+import { Redirect } from "expo-router";
 import { useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from "react-native";
-import AddBillSection from "@/components/add-bill";
-import { View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { LoginWindow } from "@/components/LoginWindow";
-import { MainScreen } from "@/components/MainScreen";
 import { RegistrationWindow } from "@/components/RegistrationWindow";
+import WelcomeCard from "@/components/WelcomeCard";
 import { useAuth } from "@/providers/AuthProvider";
-import { loginUser, logout, registerUser } from "@/services/auth";
-import WelcomeCard from "@/components/WelcomeCard"
-import { SafeAreaView } from "react-native-safe-area-context";
+import { loginUser, registerUser } from "@/services/auth";
 
 type AuthMode = "register" | "login";
 
@@ -54,28 +52,8 @@ export default function IndexScreen() {
     }
   }
 
-  async function handleLogout() {
-    setIsSubmitting(true);
-
-    try {
-      await logout();
-      setCurrentUser(null);
-      setPassword("");
-      setStatusMessage("Logged out successfully.");
-    } catch (error) {
-      setStatusMessage(error instanceof Error ? error.message : "Logout failed.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
   if (currentUser) {
-    return (
-      <MainScreen
-        user={currentUser}
-        onLogout={() => void handleLogout()}
-      />
-    );
+    return <Redirect href={"/home" as any} />;
   }
 
   return (
@@ -86,8 +64,7 @@ export default function IndexScreen() {
           style={styles.keyboardContainer}
         >
           <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-
-            <WelcomeCard></WelcomeCard>
+            <WelcomeCard />
 
             {mode === "register" ? (
               <RegistrationWindow
@@ -143,7 +120,3 @@ const styles = StyleSheet.create({
     gap: 18,
   },
 });
-
-
-
-
