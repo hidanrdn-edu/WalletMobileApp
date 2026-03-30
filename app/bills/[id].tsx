@@ -3,6 +3,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Button } from 'react-native-paper';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function BillDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -53,51 +54,53 @@ export default function BillDetailsScreen() {
   }
 
   return (
-    <View style={styles.page}>
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()}>
-          <Text style={styles.back}>←</Text>
-        </Pressable>
-        <Text style={styles.headerTitle}>Деталі рахунку</Text>
-        <View style={styles.headerButtons}>
-          <Button mode="contained" buttonColor="#0077ff" textColor="white" onPress={() => setIsEditing((prev) => !prev)}>
-            {isEditing ? 'Назад' : 'Редагувати'}
-          </Button>
-          <Button mode="text" textColor="#d32f2f" onPress={handleDelete}>
-            Видалити
-          </Button>
+    <SafeAreaView>
+      <View style={styles.page}>
+        <View style={styles.header}>
+          <Pressable onPress={() => router.back()}>
+            <Text style={styles.back}>←</Text>
+          </Pressable>
+          <Text style={styles.headerTitle}>Деталі рахунку</Text>
+          <View style={styles.headerButtons}>
+            <Button mode="contained" buttonColor="#0077ff" textColor="white" onPress={() => setIsEditing((prev) => !prev)}>
+              {isEditing ? 'Назад' : 'Редагувати'}
+            </Button>
+            <Button mode="text" textColor="#d32f2f" onPress={handleDelete}>
+              Видалити
+            </Button>
+          </View>
+        </View>
+
+        <View style={styles.card}>
+          {isEditing ? (
+            <>
+              <View style={styles.row}>
+                <Text style={styles.label}>Назва</Text>
+                <TextInput style={styles.input} value={name} onChangeText={setName} />
+              </View>
+              <View style={styles.row}>
+                <Text style={styles.label}>Баланс</Text>
+                <TextInput style={styles.input} value={balance} onChangeText={setBalance} keyboardType="numeric" />
+              </View>
+              <Button mode="contained" buttonColor="green" textColor="white" onPress={handleSave}>
+                Зберегти
+              </Button>
+            </>
+          ) : (
+            <>
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>Назва</Text>
+                <Text style={styles.infoValue}>{bill.name}</Text>
+              </View>
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>Баланс</Text>
+                <Text style={styles.infoValue}>{bill.balance}</Text>
+              </View>
+            </>
+          )}
         </View>
       </View>
-
-      <View style={styles.card}>
-        {isEditing ? (
-          <>
-            <View style={styles.row}>
-              <Text style={styles.label}>Назва</Text>
-              <TextInput style={styles.input} value={name} onChangeText={setName} />
-            </View>
-            <View style={styles.row}>
-              <Text style={styles.label}>Баланс</Text>
-              <TextInput style={styles.input} value={balance} onChangeText={setBalance} keyboardType="numeric" />
-            </View>
-            <Button mode="contained" buttonColor="green" textColor="white" onPress={handleSave}>
-              Зберегти
-            </Button>
-          </>
-        ) : (
-          <>
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Назва</Text>
-              <Text style={styles.infoValue}>{bill.name}</Text>
-            </View>
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Баланс</Text>
-              <Text style={styles.infoValue}>{bill.balance}</Text>
-            </View>
-          </>
-        )}
-      </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
