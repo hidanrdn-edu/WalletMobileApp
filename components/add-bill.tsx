@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router'
 import React, { useEffect, useState } from 'react'
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
 import { Appbar, Button, Modal, Portal } from 'react-native-paper'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 
 export default function AddBillSection() {
@@ -40,39 +41,41 @@ export default function AddBillSection() {
 
 
   return (
-    <View style={styles.wrapper}>
-        <View style={styles.container}>
-        <Text style={styles.text}>Рахунки</Text>
-        <Button icon="plus" buttonColor="green" mode="contained" textColor='white' onPress={showModal}>Додати</Button>
-        </View>
-        {bills.map(bill => (
-            <View key={bill.id} style={[styles.container]}>
-                <Pressable style={styles.billContainer} onPress={() => router.push({ pathname: '/bills/[id]', params: { id: String(bill.id) } })}>
-                    <View style={{gap: 5, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '45%'}}>
-                        <Text style={styles.text}>{bill.name}</Text>
-                    </View>
-                    <Text style={[styles.text, { fontSize: 18 }]}>{bill.balance}</Text>
-                </Pressable>
+    <SafeAreaView>
+        <View style={styles.wrapper}>
+            <View style={styles.container}>
+            <Text style={styles.text}>Рахунки</Text>
+            <Button icon="plus" buttonColor="green" mode="contained" textColor='white' onPress={showModal}>Додати</Button>
             </View>
-        ))}
-        <Portal>
-            <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={styles.contentContainer}>
-                <Appbar.Header style={{ backgroundColor: 'white', padding: 0, marginBottom: 20 }}>
-                    <Appbar.Content title="Додати рахунок" color='black'/>
-                    <Appbar.Action icon="close" onPress={hideModal} color='black'/>
-                </Appbar.Header>
-                <View style={styles.modalSection}>
-                    <Text>Назва</Text>
-                    <TextInput style={styles.input} placeholder='Введіть назву рахунку' value={name} onChangeText={setName}/>
+            {bills.map(bill => (
+                <View key={bill.id} style={[styles.container]}>
+                    <Pressable style={styles.billContainer} onPress={() => router.push({ pathname: '/bills/[id]', params: { id: String(bill.id) } })}>
+                        <View style={{gap: 5, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '45%'}}>
+                            <Text style={styles.text}>{bill.name}</Text>
+                        </View>
+                        <Text style={[styles.text, { fontSize: 18 }]}>{bill.balance}</Text>
+                    </Pressable>
                 </View>
-                <View style={[styles.modalSection, styles.balanceSection]}>
-                    <Text>Початковий баланс</Text>
-                    <TextInput style={styles.input} placeholder='Введіть початковий баланс' keyboardType='numeric' value={balance} onChangeText={setBalance}/>
-                </View>
-                <Button style={{zIndex: 10}} buttonColor='green' mode='contained' textColor='white' onPress={handleSubmit}>Створити рахунок</Button>
-            </Modal>
-        </Portal>
-    </View>
+            ))}
+            <Portal>
+                <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={styles.contentContainer}>
+                    <Appbar.Header style={{ backgroundColor: 'white', padding: 0, marginBottom: 20 }}>
+                        <Appbar.Content title="Додати рахунок" color='black'/>
+                        <Appbar.Action icon="close" onPress={hideModal} color='black'/>
+                    </Appbar.Header>
+                    <View style={styles.modalSection}>
+                        <Text>Назва</Text>
+                        <TextInput style={styles.input} placeholder='Введіть назву рахунку' value={name} onChangeText={setName}/>
+                    </View>
+                    <View style={[styles.modalSection, styles.balanceSection]}>
+                        <Text>Початковий баланс</Text>
+                        <TextInput style={styles.input} placeholder='Введіть початковий баланс' keyboardType='numeric' value={balance} onChangeText={setBalance}/>
+                    </View>
+                    <Button style={{zIndex: 10}} buttonColor='green' mode='contained' textColor='white' onPress={handleSubmit}>Створити рахунок</Button>
+                </Modal>
+            </Portal>
+        </View>
+    </SafeAreaView>
   )
 }
 
