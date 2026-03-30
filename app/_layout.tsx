@@ -6,6 +6,8 @@ import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { db } from "@/db/client";
 import migrations from "@/drizzle/migrations";
 import { AuthProvider, useAuth } from "@/providers/AuthProvider";
+import { BillsProvider } from "@/context/bills-context";
+
 
 export default function RootLayout() {
   const { success, error } = useMigrations(db, migrations);
@@ -52,11 +54,11 @@ function AuthenticatedApp() {
   }
 
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-      }}
-    />
+    <PaperProvider>
+      <BillsProvider>
+        <Stack screenOptions={{ headerShown: false }} />
+      </BillsProvider>
+    </PaperProvider>
   );
 }
 
