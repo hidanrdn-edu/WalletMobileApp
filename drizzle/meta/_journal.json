@@ -29,6 +29,13 @@
       "when": 1774285507203,
       "tag": "0003_goofy_supernaut",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1774363200000,
+      "tag": "0004_auth_password_hash",
+      "breakpoints": true
     }
   ]
 }
