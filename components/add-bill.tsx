@@ -2,7 +2,6 @@ import { useBills } from '@/context/bills-context'
 import { useRouter } from 'expo-router'
 import React, { useEffect, useState } from 'react'
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
-import DropDownPicker from 'react-native-dropdown-picker'
 import { Appbar, Button, Modal, Portal } from 'react-native-paper'
 
 
@@ -12,22 +11,6 @@ export default function AddBillSection() {
     const [name, setName] = useState('');
     const [balance, setBalance] = useState('');
 
-    const [open, setOpen] = useState(false);
-    const [value, setValue] = useState("готівка");
-    const [items, setItems] = useState([
-        {label: 'Готівка', value: 'готівка'},
-        {label: 'Картка', value: 'картка'},
-        {label: 'Депозит', value: 'депозит'},
-    ]);
-
-    const [openCurrency, setOpenCurrency] = useState(false);
-    const [valueCurrency, setValueCurrency] = useState("грн.");
-    const [itemsCurrency, setItemsCurrency] = useState([
-        {label: 'UAH', value: 'грн.'},
-        {label: 'USD', value: 'дол.'},
-        {label: 'EUR', value: 'єв.'},
-    ]);
-
     const [visible, setVisible] = useState(false);
 
     const showModal = () => setVisible(true);
@@ -36,16 +19,12 @@ export default function AddBillSection() {
     function resetForm() {
         setName('');
         setBalance('');
-        setValue('готівка');
-        setValueCurrency('грн.');
     }
 
-    function handleSubmit() {
-        addBill({
-            name: name,
-            type: value,
+    async function handleSubmit() {
+        await addBill({
+            name,
             balance: parseFloat(balance) || 0,
-            currency: valueCurrency
         });
 
         hideModal();
@@ -69,11 +48,10 @@ export default function AddBillSection() {
         {bills.map(bill => (
             <View key={bill.id} style={[styles.container]}>
                 <Pressable style={styles.billContainer} onPress={() => router.push({ pathname: '/bills/[id]', params: { id: String(bill.id) } })}>
-                    <View style={{gap: 5, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '33%'}}>
+                    <View style={{gap: 5, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '45%'}}>
                         <Text style={styles.text}>{bill.name}</Text>
-                        <Text>{bill.type}</Text>
                     </View>
-                    <Text style={[styles.text, { fontSize: 18 }]}>{bill.balance} {bill.currency}</Text>
+                    <Text style={[styles.text, { fontSize: 18 }]}>{bill.balance}</Text>
                 </Pressable>
             </View>
         ))}
@@ -87,19 +65,9 @@ export default function AddBillSection() {
                     <Text>Назва</Text>
                     <TextInput style={styles.input} placeholder='Введіть назву рахунку' value={name} onChangeText={setName}/>
                 </View>
-                <View style={[styles.modalSection, {zIndex: 3000}]}>
-                    <Text>Тип</Text>
-                    <DropDownPicker style={styles.input} open={open} value={value}  items={items} setOpen={setOpen} setValue={setValue} setItems={setItems} placeholder='Оберіть рахунок'/>
-                </View>
-                <View style={[styles.modalSection, styles.balanceSection, {zIndex: 1000}]}>
-                    <View style={{width: '65%', gap: 10}}>
-                        <Text>Початковий баланс</Text>
-                        <TextInput style={styles.input} placeholder='Введіть початковий баланс' keyboardType='numeric' value={balance} onChangeText={setBalance}/>
-                    </View>
-                    <View style={{width: '30%', gap: 10}}>
-                        <Text>Валюта</Text>
-                        <DropDownPicker style={styles.input} open={openCurrency} value={valueCurrency}  items={itemsCurrency} setOpen={setOpenCurrency} setValue={setValueCurrency} setItems={setItemsCurrency} placeholder='Оберіть валюту'/>
-                    </View>
+                <View style={[styles.modalSection, styles.balanceSection]}>
+                    <Text>Початковий баланс</Text>
+                    <TextInput style={styles.input} placeholder='Введіть початковий баланс' keyboardType='numeric' value={balance} onChangeText={setBalance}/>
                 </View>
                 <Button style={{zIndex: 10}} buttonColor='green' mode='contained' textColor='white' onPress={handleSubmit}>Створити рахунок</Button>
             </Modal>
@@ -121,10 +89,7 @@ const styles = StyleSheet.create(
             gap: 10,
         },
         balanceSection: {
-            flexDirection: 'row',
-            justifyContent: 'space-between',
             marginBottom: 20,
-            alignItems: 'center',
         },
         contentContainer: {
             backgroundColor: 'white', 

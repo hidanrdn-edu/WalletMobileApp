@@ -2,7 +2,6 @@ import { useBills } from '@/context/bills-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import DropDownPicker from 'react-native-dropdown-picker';
 import { Button } from 'react-native-paper';
 
 export default function BillDetailsScreen() {
@@ -15,30 +14,12 @@ export default function BillDetailsScreen() {
 
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState('');
-  const [type, setType] = useState('');
   const [balance, setBalance] = useState('');
-  const [currency, setCurrency] = useState('');
-
-  const [openType, setOpenType] = useState(false);
-  const [typeItems, setTypeItems] = useState([
-    { label: 'Готівка', value: 'готівка' },
-    { label: 'Картка', value: 'картка' },
-    { label: 'Депозит', value: 'депозит' },
-  ]);
-
-  const [openCurrency, setOpenCurrency] = useState(false);
-  const [currencyItems, setCurrencyItems] = useState([
-    { label: 'UAH', value: 'грн.' },
-    { label: 'USD', value: 'дол.' },
-    { label: 'EUR', value: 'єв.' },
-  ]);
 
   useEffect(() => {
     if (bill) {
       setName(bill.name);
-      setType(bill.type);
       setBalance(String(bill.balance));
-      setCurrency(bill.currency);
     }
   }, [bill]);
 
@@ -53,23 +34,21 @@ export default function BillDetailsScreen() {
     );
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!bill) {
       return;
     }
 
-    updateBill(billId, {
+    await updateBill(billId, {
       name: name.trim() || bill.name,
-      type: type.trim() || bill.type,
       balance: Number.parseFloat(balance) || 0,
-      currency: currency.trim() || bill.currency,
     });
 
     setIsEditing(false);
   }
 
-  function handleDelete() {
-    deleteBill(billId);
+  async function handleDelete() {
+    await deleteBill(billId);
     router.back();
   }
 
@@ -97,37 +76,9 @@ export default function BillDetailsScreen() {
               <Text style={styles.label}>Назва</Text>
               <TextInput style={styles.input} value={name} onChangeText={setName} />
             </View>
-            <View style={[styles.row, { zIndex: 2000 }]}>
-              <Text style={styles.label}>Тип</Text>
-              <DropDownPicker
-                style={styles.input}
-                open={openType}
-                value={type}
-                items={typeItems}
-                setOpen={setOpenType}
-                setValue={setType}
-                setItems={setTypeItems}
-                placeholder="Оберіть тип"
-                zIndex={2000}
-              />
-            </View>
             <View style={styles.row}>
               <Text style={styles.label}>Баланс</Text>
               <TextInput style={styles.input} value={balance} onChangeText={setBalance} keyboardType="numeric" />
-            </View>
-            <View style={[styles.row, { zIndex: 1000 }]}>
-              <Text style={styles.label}>Валюта</Text>
-              <DropDownPicker
-                style={styles.input}
-                open={openCurrency}
-                value={currency}
-                items={currencyItems}
-                setOpen={setOpenCurrency}
-                setValue={setCurrency}
-                setItems={setCurrencyItems}
-                placeholder="Оберіть валюту"
-                zIndex={1000}
-              />
             </View>
             <Button mode="contained" buttonColor="green" textColor="white" onPress={handleSave}>
               Зберегти
@@ -140,14 +91,8 @@ export default function BillDetailsScreen() {
               <Text style={styles.infoValue}>{bill.name}</Text>
             </View>
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Тип</Text>
-              <Text style={styles.infoValue}>{bill.type}</Text>
-            </View>
-            <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>Баланс</Text>
-              <Text style={styles.infoValue}>
-                {bill.balance} {bill.currency}
-              </Text>
+              <Text style={styles.infoValue}>{bill.balance}</Text>
             </View>
           </>
         )}

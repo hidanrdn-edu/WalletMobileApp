@@ -1,51 +1,75 @@
 import { Bill, BillInput } from '@/types/bill';
-import React, { createContext, ReactNode, useContext, useMemo, useState } from 'react';
+import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+
+import { useAuth } from '@/providers/AuthProvider';
+import {
+  createAccountForUser,
+  deleteAccountForUser,
+  listAccountsByUser,
+  updateAccountForUser,
+} from '@/services/accounts';
 
 type BillsContextType = {
   bills: Bill[];
-  addBill: (bill: BillInput) => void;
-  updateBill: (id: number, bill: BillInput) => void;
-  deleteBill: (id: number) => void;
+  addBill: (bill: BillInput) => Promise<void>;
+  updateBill: (id: number, bill: BillInput) => Promise<void>;
+  deleteBill: (id: number) => Promise<void>;
   getBillById: (id: number) => Bill | undefined;
+  isLoading: boolean;
 };
-
-const initialBills: Bill[] = [
-  {
-    id: 1,
-    name: 'Готівка',
-    type: 'готівка',
-    balance: 1000,
-    currency: 'грн.',
-  },
-  {
-    id: 2,
-    name: 'Картка',
-    type: 'картка',
-    balance: 5000,
-    currency: 'дол.',
-  },
-];
 
 const BillsContext = createContext<BillsContextType | undefined>(undefined);
 
 export function BillsProvider({ children }: { children: ReactNode }) {
-  const [bills, setBills] = useState<Bill[]>(initialBills);
+  const { currentUser } = useAuth();
+  const [bills, setBills] = useState<Bill[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  function addBill(bill: BillInput) {
-    setBills((prevBills) => {
-      const nextId = prevBills.length ? Math.max(...prevBills.map((item) => item.id)) + 1 : 1;
-      return [...prevBills, { id: nextId, ...bill }];
-    });
+  const loadBills = useCallback(async () => {
+    if (!currentUser) {
+      setBills([]);
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const accounts = await listAccountsByUser(currentUser.id);
+      setBills(accounts);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentUser]);
+
+  useEffect(() => {
+    void loadBills();
+  }, [loadBills]);
+
+  async function addBill(bill: BillInput) {
+    if (!currentUser) {
+      throw new Error('User must be logged in to add a bill.');
+    }
+
+    await createAccountForUser(currentUser.id, bill);
+    await loadBills();
   }
 
-  function updateBill(id: number, bill: BillInput) {
-    setBills((prevBills) =>
-      prevBills.map((item) => (item.id === id ? { id, ...bill } : item)),
-    );
+  async function updateBill(id: number, bill: BillInput) {
+    if (!currentUser) {
+      throw new Error('User must be logged in to update a bill.');
+    }
+
+    await updateAccountForUser(currentUser.id, id, bill);
+    await loadBills();
   }
 
-  function deleteBill(id: number) {
-    setBills((prevBills) => prevBills.filter((item) => item.id !== id));
+  async function deleteBill(id: number) {
+    if (!currentUser) {
+      throw new Error('User must be logged in to delete a bill.');
+    }
+
+    await deleteAccountForUser(currentUser.id, id);
+    await loadBills();
   }
 
   function getBillById(id: number) {
@@ -53,8 +77,8 @@ export function BillsProvider({ children }: { children: ReactNode }) {
   }
 
   const value = useMemo(
-    () => ({ bills, addBill, updateBill, deleteBill, getBillById }),
-    [bills],
+    () => ({ bills, addBill, updateBill, deleteBill, getBillById, isLoading }),
+    [bills, isLoading],
   );
 
   return <BillsContext.Provider value={value}>{children}</BillsContext.Provider>;

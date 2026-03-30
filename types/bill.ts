@@ -1,14 +1,13 @@
 export type Bill = {
   id: number;
+  userId: number;
   name: string;
-  type: string;
   balance: number;
-  currency: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type BillInput = {
   name: string;
-  type: string;
   balance: number;
-  currency: string;
 };
