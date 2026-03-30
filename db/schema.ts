@@ -39,8 +39,7 @@ export const transactions = sqliteTable("transactions", {
   accountId: integer("account_id").notNull().references(() => accounts.id),
   categoryId: integer("category_id").notNull().references(() => categories.id),
   amount: real("amount").notNull(),
-  type: text("type").notNull(),
-  description: text("description").notNull(),
+  type: text("type").notNull(),                                                      
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 

@@ -1,8 +1,6 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from "react-native";
-import AddBillSection from "@/components/add-bill";
-import { View } from "react-native";
 
 import { LoginWindow } from "@/components/LoginWindow";
 import { MainScreen } from "@/components/MainScreen";

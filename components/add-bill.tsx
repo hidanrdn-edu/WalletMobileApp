@@ -1,128 +1,220 @@
-import { useBills } from '@/context/bills-context'
-import { useRouter } from 'expo-router'
-import React, { useEffect, useState } from 'react'
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
-import { Appbar, Button, Modal, Portal } from 'react-native-paper'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { useEffect, useState } from "react";
+import { Pressable, StyleSheet, TextInput, View } from "react-native";
+import { useRouter } from "expo-router";
+import { Appbar, Button, Modal, Portal, Surface, Text, useTheme } from "react-native-paper";
 
+import { useBills } from "@/context/bills-context";
 
 export default function AddBillSection() {
-    const router = useRouter();
-    const { bills, addBill } = useBills();
-    const [name, setName] = useState('');
-    const [balance, setBalance] = useState('');
+  const router = useRouter();
+  const theme = useTheme();
+  const { bills, addBill, isLoading } = useBills();
+  const [name, setName] = useState("");
+  const [balance, setBalance] = useState("");
+  const [visible, setVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const [visible, setVisible] = useState(false);
-
-    const showModal = () => setVisible(true);
-    const hideModal = () => setVisible(false);
-
-    function resetForm() {
-        setName('');
-        setBalance('');
+  const showModal = () => setVisible(true);
+  const hideModal = () => {
+    if (isSubmitting) {
+      return;
     }
 
-    async function handleSubmit() {
-        await addBill({
-            name,
-            balance: parseFloat(balance) || 0,
-        });
+    setVisible(false);
+    setErrorMessage(null);
+  };
 
-        hideModal();
-        resetForm();
+  function resetForm() {
+    setName("");
+    setBalance("");
+    setErrorMessage(null);
+  }
+
+  async function handleSubmit() {
+    setIsSubmitting(true);
+    setErrorMessage(null);
+
+    try {
+      await addBill({
+        name,
+        balance: Number(balance.replace(",", ".")) || 0,
+      });
+
+      hideModal();
+      resetForm();
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "Unable to create the account.");
+    } finally {
+      setIsSubmitting(false);
     }
+  }
 
-    useEffect(() => {
-        if (!visible) {
-            resetForm();
-        }
-    }, [visible])
-
-
+  useEffect(() => {
+    if (!visible) {
+      resetForm();
+    }
+  }, [visible]);
 
   return (
-    <SafeAreaView>
-        <View style={styles.wrapper}>
-            <View style={styles.container}>
-            <Text style={styles.text}>Рахунки</Text>
-            <Button icon="plus" buttonColor="green" mode="contained" textColor='white' onPress={showModal}>Додати</Button>
-            </View>
-            {bills.map(bill => (
-                <View key={bill.id} style={[styles.container]}>
-                    <Pressable style={styles.billContainer} onPress={() => router.push({ pathname: '/bills/[id]', params: { id: String(bill.id) } })}>
-                        <View style={{gap: 5, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '45%'}}>
-                            <Text style={styles.text}>{bill.name}</Text>
-                        </View>
-                        <Text style={[styles.text, { fontSize: 18 }]}>{bill.balance}</Text>
-                    </Pressable>
-                </View>
-            ))}
-            <Portal>
-                <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={styles.contentContainer}>
-                    <Appbar.Header style={{ backgroundColor: 'white', padding: 0, marginBottom: 20 }}>
-                        <Appbar.Content title="Додати рахунок" color='black'/>
-                        <Appbar.Action icon="close" onPress={hideModal} color='black'/>
-                    </Appbar.Header>
-                    <View style={styles.modalSection}>
-                        <Text>Назва</Text>
-                        <TextInput style={styles.input} placeholder='Введіть назву рахунку' value={name} onChangeText={setName}/>
-                    </View>
-                    <View style={[styles.modalSection, styles.balanceSection]}>
-                        <Text>Початковий баланс</Text>
-                        <TextInput style={styles.input} placeholder='Введіть початковий баланс' keyboardType='numeric' value={balance} onChangeText={setBalance}/>
-                    </View>
-                    <Button style={{zIndex: 10}} buttonColor='green' mode='contained' textColor='white' onPress={handleSubmit}>Створити рахунок</Button>
-                </Modal>
-            </Portal>
+    <View style={styles.wrapper}>
+      <Surface style={[styles.headerCard, { backgroundColor: theme.colors.surface }]} elevation={2}>
+        <View style={styles.headerRow}>
+          <View>
+            <Text variant="titleMedium" style={{ color: theme.colors.onSurface }}>
+              Accounts
+            </Text>
+            <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+              Add an account to unlock income and expense transactions.
+            </Text>
+          </View>
         </View>
-    </SafeAreaView>
-  )
+        <Button
+          icon="plus"
+          mode="contained"
+          onPress={showModal}
+          loading={isSubmitting}
+          disabled={isSubmitting || isLoading}
+          style={styles.addButton}
+        >
+          Add
+        </Button>
+      </Surface>
+
+      {isLoading ? (
+        <Surface style={[styles.emptyCard, { backgroundColor: theme.colors.surface }]} elevation={1}>
+          <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+            Loading accounts...
+          </Text>
+        </Surface>
+      ) : bills.length === 0 ? (
+        <Surface style={[styles.emptyCard, { backgroundColor: theme.colors.surface }]} elevation={1}>
+          <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+            No accounts yet.
+          </Text>
+        </Surface>
+      ) : (
+        bills.map((bill) => (
+          <Surface
+            key={bill.id}
+            style={[styles.accountCard, { backgroundColor: theme.colors.surface }]}
+            elevation={1}
+          >
+            <Pressable
+              style={styles.accountRow}
+              onPress={() => router.push({ pathname: "/bills/[id]", params: { id: String(bill.id) } })}
+            >
+              <View style={styles.accountText}>
+                <Text variant="titleMedium" style={{ color: theme.colors.onSurface }}>
+                  {bill.name}
+                </Text>
+                <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+                  Open account details
+                </Text>
+              </View>
+              <Text variant="titleMedium" style={{ color: theme.colors.onSurface }}>
+                {bill.balance.toFixed(2)}
+              </Text>
+            </Pressable>
+          </Surface>
+        ))
+      )}
+
+      <Portal>
+        <Modal
+          visible={visible}
+          onDismiss={hideModal}
+          contentContainerStyle={[styles.contentContainer, { backgroundColor: theme.colors.background }]}
+        >
+          <Appbar.Header style={{ backgroundColor: theme.colors.background, paddingHorizontal: 0 }}>
+            <Appbar.Content title="Add account" />
+            <Appbar.Action icon="close" onPress={hideModal} disabled={isSubmitting} />
+          </Appbar.Header>
+
+          <View style={styles.modalSection}>
+            <Text variant="labelLarge" style={{ color: theme.colors.onSurface }}>
+              Name
+            </Text>
+            <TextInput
+              style={[styles.input, { borderColor: theme.colors.outline }]}
+              placeholder="Enter account name"
+              value={name}
+              onChangeText={setName}
+            />
+          </View>
+
+          <View style={styles.modalSection}>
+            <Text variant="labelLarge" style={{ color: theme.colors.onSurface }}>
+              Initial balance
+            </Text>
+            <TextInput
+              style={[styles.input, { borderColor: theme.colors.outline }]}
+              placeholder="Enter initial balance"
+              keyboardType="decimal-pad"
+              value={balance}
+              onChangeText={setBalance}
+            />
+          </View>
+
+          {errorMessage ? (
+            <Text style={{ color: theme.colors.error }}>{errorMessage}</Text>
+          ) : null}
+
+          <Button mode="contained" onPress={() => void handleSubmit()} loading={isSubmitting}>
+            Create account
+          </Button>
+        </Modal>
+      </Portal>
+    </View>
+  );
 }
 
-const styles = StyleSheet.create(
-    {
-        input: {
-            borderColor: '#bfc5cc',
-            borderWidth: 1,
-            borderRadius: 6,
-            padding: 15,
-        },
-        modalSection: {
-            marginTop: 10,
-            gap: 10,
-        },
-        balanceSection: {
-            marginBottom: 20,
-        },
-        contentContainer: {
-            backgroundColor: 'white', 
-            padding: 30, 
-            borderRadius: 10,
-            width: '65%',
-            alignSelf: 'center',
-        
-        },
-        wrapper: {
-            flex : 1, 
-            backgroundColor: '#e2e2e2'
-        },
-        container: {
-            width: '90%',
-            alignSelf: 'center',
-            padding: 20,
-            marginTop: 20,
-            backgroundColor: 'white',
-            borderRadius: 10,
-            gap: 20,
-        },
-        text: {
-            fontSize: 26,
-            fontWeight: 'bold',
-        },
-        billContainer: {
-            flexDirection: 'row',
-            justifyContent: 'space-between',   
-            alignItems: 'center',
-        }
-    }
-)
+const styles = StyleSheet.create({
+  wrapper: {
+    marginBottom: 20,
+    gap: 12,
+  },
+  headerCard: {
+    borderRadius: 16,
+    padding: 16,
+  },
+  headerRow: {
+    gap: 8,
+  },
+  addButton: {
+    alignSelf: "flex-start",
+    marginTop: 16,
+  },
+  emptyCard: {
+    borderRadius: 16,
+    padding: 16,
+  },
+  accountCard: {
+    borderRadius: 16,
+    padding: 16,
+  },
+  accountRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 12,
+  },
+  accountText: {
+    flex: 1,
+    gap: 4,
+  },
+  contentContainer: {
+    margin: 20,
+    padding: 24,
+    borderRadius: 20,
+    gap: 16,
+  },
+  modalSection: {
+    gap: 10,
+  },
+  input: {
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 14,
+  },
+});
