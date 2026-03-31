@@ -1,5 +1,3 @@
-# Wallet
-=======
 # WalletMobileApp
 
 ## Overview
