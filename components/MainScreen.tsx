@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { PieChart } from "react-native-gifted-charts";
 import { Card, Icon, Surface, Text, useTheme } from "react-native-paper";
@@ -8,6 +8,8 @@ import AppHeader from "@/components/AppHeader";
 import SideMenu from "@/components/SideMenu";
 import type { User } from "@/db/schema";
 import { useAppColors } from "@/hooks/useAppColors";
+import { listAccountsByUser } from "@/services/accounts";
+import { getExpensesByCategory, getTotalExpensesForUser, getTotalIncomeForUser } from "@/services/transactions";
 
 type MainScreenProps = {
   user: User;
@@ -16,7 +18,7 @@ type MainScreenProps = {
 
 const currencyFormatter = new Intl.NumberFormat(undefined, {
   style: "currency",
-  currency: "EUR",
+  currency: "UAH",
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
 });
@@ -25,21 +27,61 @@ export function MainScreen({ user, onLogout }: MainScreenProps) {
   const theme = useTheme();
   const colors = useAppColors();
   const [menuVisible, setMenuVisible] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState({
+    balance: 0,
+    income: 0,
+    expense: 0,
+    expensesByCategory: [] as Array<{ categoryName: string; total: number; color: string }>,
+  });
 
-  const monthLabel = "Квітень 2026";
-  const income = 1200;
-  const expense = 820;
-  const balance = income - expense;
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const userAccounts = await listAccountsByUser(user.id);
+        const totalBalance = userAccounts.reduce((sum, acc) => sum + acc.balance, 0);
 
-  const pieData = [
-    { value: 450, color: colors.chart[0], text: "Оренда" },
-    { value: 200, color: colors.chart[1], text: "Їжа та напої" },
-    { value: 50, color: colors.chart[2], text: "Транспорт" },
-    { value: 120, color: colors.chart[3], text: "Розваги" },
-  ];
+        const totalIncome = await getTotalIncomeForUser(user.id);
+        const totalExpense = await getTotalExpensesForUser(user.id);
+
+        const expensesByCategory = await getExpensesByCategory(user.id);
+
+        const chartData = expensesByCategory.map((exp, index) => ({
+          categoryName: exp.categoryName,
+          total: exp.total,
+          color: colors.chart[index % colors.chart.length],
+        }));
+
+        setData({
+          balance: totalBalance,
+          income: totalIncome,
+          expense: totalExpense,
+          expensesByCategory: chartData,
+        });
+      } catch (error) {
+        console.error("Error loading dashboard data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [user.id]);
+
+  const today = new Date();
+  const monthLabel = today.toLocaleDateString("uk-UA", {
+    month: "long",
+    year: "numeric",
+  });
 
   const openMenu = () => setMenuVisible(true);
   const closeMenu = () => setMenuVisible(false);
+
+  const pieData = data.expensesByCategory.map(item => ({
+    value: item.total,
+    color: item.color,
+    text: item.categoryName,
+  }));
 
   return (
     <SafeAreaView style={styles.container}>
@@ -60,7 +102,7 @@ export function MainScreen({ user, onLogout }: MainScreenProps) {
             Баланс ({monthLabel})
           </Text>
           <Text variant="displaySmall" style={{ color: theme.colors.onSurface, fontWeight: "bold" }}>
-            {currencyFormatter.format(balance)}
+            {currencyFormatter.format(data.balance)}
           </Text>
         </View>
 
@@ -75,7 +117,7 @@ export function MainScreen({ user, onLogout }: MainScreenProps) {
               </Text>
             </View>
             <Text variant="titleLarge" style={[styles.widgetAmount, { color: colors.income.text }]}>
-              +{currencyFormatter.format(income)}
+              +{currencyFormatter.format(data.income)}
             </Text>
           </Surface>
 
@@ -89,7 +131,7 @@ export function MainScreen({ user, onLogout }: MainScreenProps) {
               </Text>
             </View>
             <Text variant="titleLarge" style={[styles.widgetAmount, { color: colors.expense.text }]}>
-              -{currencyFormatter.format(expense)}
+              -{currencyFormatter.format(data.expense)}
             </Text>
           </Surface>
         </View>
@@ -116,7 +158,7 @@ export function MainScreen({ user, onLogout }: MainScreenProps) {
                       variant="titleMedium"
                       style={{ color: theme.colors.onSurface, fontWeight: "bold" }}
                     >
-                      {currencyFormatter.format(expense)}
+                      {currencyFormatter.format(data.expense)}
                     </Text>
                   </View>
                 )}
