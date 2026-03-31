@@ -144,7 +144,7 @@ export default function AddIncomeScreen() {
         </HelperText>
       </ScrollView>
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, { borderColor: theme.colors.surfaceVariant }]}>
         <Button mode="contained" buttonColor={colors.income.background} textColor={colors.income.text} onPress={handleSave} 
           style={styles.saveButton} disabled={!amount || !categoryId || !accountId}>
           Зберегти
@@ -158,6 +158,6 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { padding: 16, paddingBottom: 40 },
   input: { marginBottom: 20, fontSize: 16 },
-  footer: { padding: 16, borderTopWidth: 1, borderColor: '#e0e0e0' },
+  footer: { padding: 16, borderTopWidth: 1 },
   saveButton: { paddingVertical: 8, borderRadius: 12 }
 });

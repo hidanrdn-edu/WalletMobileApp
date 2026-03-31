@@ -1,4 +1,7 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { useTheme } from "react-native-paper";
+
+import { useAppColors } from "@/hooks/useAppColors";
 
 type LoginWindowProps = {
   email: string;
@@ -21,12 +24,15 @@ export function LoginWindow({
   onSubmit,
   onSwitchToRegister,
 }: LoginWindowProps) {
+  const theme = useTheme();
+  const appColors = useAppColors();
+
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, { backgroundColor: appColors.authCard }]}>
       <View style={styles.headerRow}>
         <View>
-          <Text style={styles.eyebrow}>Welcome back</Text>
-          <Text style={styles.title}>Login to your Moneyfy account</Text>
+          <Text style={[styles.eyebrow, { color: theme.colors.secondary }]}>Welcome back</Text>
+          <Text style={[styles.title, { color: theme.colors.onSurface }]}>Login to your Moneyfy account</Text>
         </View>
       </View>
 
@@ -50,19 +56,22 @@ export function LoginWindow({
       <Pressable
         onPress={onSubmit}
         disabled={isSubmitting}
-        style={[styles.primaryButton, isSubmitting && styles.buttonDisabled]}
+        style={[styles.primaryButton, { backgroundColor: appColors.successButton }, isSubmitting && styles.buttonDisabled]}
       >
         {isSubmitting ? (
-          <ActivityIndicator color="#ffffff" />
+          <ActivityIndicator color={theme.colors.onPrimary} />
         ) : (
-          <Text style={styles.primaryButtonText}>Login</Text>
+          <Text style={[styles.primaryButtonText, { color: theme.colors.onPrimary }]}>Login</Text>
         )}
       </Pressable>
 
-      <Text style={styles.statusMessage}>{statusMessage}</Text>
+      <Text style={[styles.statusMessage, { color: theme.colors.onSurfaceVariant }]}>{statusMessage}</Text>
 
-      <Pressable onPress={onSwitchToRegister} style={styles.switchButton}>
-          <Text style={styles.switchButtonText}>Register instead</Text>
+      <Pressable
+        onPress={onSwitchToRegister}
+        style={[styles.switchButton, { backgroundColor: theme.colors.secondaryContainer }]}
+      >
+          <Text style={[styles.switchButtonText, { color: theme.colors.onSecondaryContainer }]}>Register instead</Text>
         </Pressable>
     </View>
   );
@@ -87,17 +96,26 @@ function InputField({
   keyboardType = "default",
   secureTextEntry = false,
 }: InputFieldProps) {
+  const theme = useTheme();
+
   return (
     <View style={styles.inputGroup}>
-      <Text style={styles.inputLabel}>{label}</Text>
+      <Text style={[styles.inputLabel, { color: theme.colors.onSurfaceVariant }]}>{label}</Text>
       <TextInput
         autoCapitalize={autoCapitalize}
         keyboardType={keyboardType}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor="#78938b"
+        placeholderTextColor={theme.colors.outline}
         secureTextEntry={secureTextEntry}
-        style={styles.input}
+        style={[
+          styles.input,
+          {
+            color: theme.colors.onSurface,
+            borderColor: theme.colors.outlineVariant,
+            backgroundColor: theme.colors.surface,
+          },
+        ]}
         value={value}
       />
     </View>
@@ -108,7 +126,6 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: 28,
     padding: 20,
-    backgroundColor: "rgba(255, 255, 255, 0.88)",
   },
   headerRow: {
     flexDirection: "row",
@@ -122,26 +139,22 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     letterSpacing: 1,
     textTransform: "uppercase",
-    color: "#5b7a71",
   },
   title: {
     marginTop: 6,
     fontSize: 24,
     lineHeight: 30,
     fontWeight: "800",
-    color: "#16312b",
   },
   switchButton: {
     borderRadius: 999,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    backgroundColor: "#e6f0ed",
     marginTop: 15
   },
   switchButtonText: {
     fontSize: 13,
     fontWeight: "700",
-    color: "#33554d",
   },
   inputGroup: {
     marginBottom: 14,
@@ -150,17 +163,13 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     fontSize: 13,
     fontWeight: "700",
-    color: "#23463f",
   },
   input: {
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: "#d7e4df",
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 15,
-    color: "#16312b",
-    backgroundColor: "#f7fbf9",
   },
   primaryButton: {
     marginTop: 6,
@@ -168,12 +177,10 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#0f766e",
   },
   primaryButtonText: {
     fontSize: 16,
     fontWeight: "800",
-    color: "#ffffff",
   },
   statusLabel: {
     marginTop: 18,
@@ -181,13 +188,11 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     letterSpacing: 1,
     textTransform: "uppercase",
-    color: "#5b7a71",
   },
   statusMessage: {
     marginTop: 8,
     fontSize: 15,
     lineHeight: 22,
-    color: "#24433d",
   },
   buttonDisabled: {
     opacity: 0.55,

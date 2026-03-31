@@ -2,8 +2,10 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Redirect } from "expo-router";
 import { useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from "react-native";
+import { useTheme } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { useAppColors } from "@/hooks/useAppColors";
 import { LoginWindow } from "@/components/LoginWindow";
 import { RegistrationWindow } from "@/components/RegistrationWindow";
 import WelcomeCard from "@/components/WelcomeCard";
@@ -13,6 +15,8 @@ import { loginUser, registerUser } from "@/services/auth";
 type AuthMode = "register" | "login";
 
 export default function IndexScreen() {
+  const theme = useTheme();
+  const appColors = useAppColors();
   const { currentUser, setCurrentUser } = useAuth();
   const [mode, setMode] = useState<AuthMode>("register");
   const [name, setName] = useState("");
@@ -57,13 +61,17 @@ export default function IndexScreen() {
   }
 
   return (
-    <LinearGradient colors={["#16a34a", "#22c55e", "#86efac"]} style={styles.background}>
+    <LinearGradient colors={appColors.authGradient as [string, string, string]} style={styles.background}>
       <SafeAreaView style={styles.safeArea}>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : undefined}
           style={styles.keyboardContainer}
         >
-          <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+          <ScrollView
+            contentContainerStyle={styles.content}
+            showsVerticalScrollIndicator={false}
+            style={{ backgroundColor: theme.colors.backdrop + "22" }}
+          >
             <WelcomeCard />
 
             {mode === "register" ? (

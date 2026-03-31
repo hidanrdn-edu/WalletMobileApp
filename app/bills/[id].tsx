@@ -2,10 +2,14 @@ import { useBills } from "@/context/bills-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import { Button } from "react-native-paper";
+import { Button, useTheme } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { useAppColors } from "@/hooks/useAppColors";
+
 export default function BillDetailsScreen() {
+  const theme = useTheme();
+  const appColors = useAppColors();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { getBillById, updateBill, deleteBill } = useBills();
@@ -26,10 +30,10 @@ export default function BillDetailsScreen() {
 
   if (!bill) {
     return (
-      <SafeAreaView style={styles.safeArea}>
-        <View style={styles.page}>
-          <Text style={styles.title}>Рахунок не знайдено</Text>
-          <Button mode="contained" onPress={() => router.back()}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.colors.background }]}>
+        <View style={[styles.page, { backgroundColor: theme.colors.background }]}>
+          <Text style={[styles.title, { color: theme.colors.onSurface }]}>Рахунок не знайдено</Text>
+          <Button mode="contained" buttonColor={theme.colors.primary} textColor={theme.colors.onPrimary} onPress={() => router.back()}>
             Назад
           </Button>
         </View>
@@ -54,63 +58,83 @@ export default function BillDetailsScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.page}>
-        <View style={styles.header}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.colors.background }]}>
+      <View style={[styles.page, { backgroundColor: theme.colors.background }]}>
+        <View style={[styles.header, { backgroundColor: theme.colors.surface }]}> 
           <Pressable onPress={() => router.back()}>
-            <Text style={styles.back}>←</Text>
+            <Text style={[styles.back, { color: theme.colors.onSurfaceVariant }]}>←</Text>
           </Pressable>
 
-          <Text style={styles.headerTitle}>Деталі рахунку</Text>
+          <Text style={[styles.headerTitle, { color: theme.colors.onSurface }]}>Деталі рахунку</Text>
 
           <View style={styles.headerButtons}>
             <Button
               mode="contained"
-              buttonColor="#0077ff"
-              textColor="white"
+              buttonColor={theme.colors.primary}
+              textColor={theme.colors.onPrimary}
               onPress={() => setIsEditing((prev) => !prev)}
             >
               {isEditing ? "Назад" : "Редагувати"}
             </Button>
 
-            <Button mode="text" textColor="#d32f2f" onPress={handleDelete}>
+            <Button mode="text" textColor={theme.colors.error} onPress={handleDelete}>
               Видалити
             </Button>
           </View>
         </View>
 
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: theme.colors.surface }]}> 
           {isEditing ? (
             <>
               <View style={styles.row}>
-                <Text style={styles.label}>Назва</Text>
-                <TextInput style={styles.input} value={name} onChangeText={setName} />
-              </View>
-
-              <View style={styles.row}>
-                <Text style={styles.label}>Баланс</Text>
+                <Text style={[styles.label, { color: theme.colors.onSurfaceVariant }]}>Назва</Text>
                 <TextInput
-                  style={styles.input}
-                  value={balance}
-                  onChangeText={setBalance}
-                  keyboardType="numeric"
+                  style={[
+                    styles.input,
+                    {
+                      borderColor: theme.colors.outlineVariant,
+                      backgroundColor: theme.colors.elevation.level1,
+                      color: theme.colors.onSurface,
+                    },
+                  ]}
+                  value={name}
+                  onChangeText={setName}
+                  placeholderTextColor={theme.colors.outline}
                 />
               </View>
 
-              <Button mode="contained" buttonColor="green" textColor="white" onPress={handleSave}>
+              <View style={styles.row}>
+                <Text style={[styles.label, { color: theme.colors.onSurfaceVariant }]}>Баланс</Text>
+                <TextInput
+                  style={[
+                    styles.input,
+                    {
+                      borderColor: theme.colors.outlineVariant,
+                      backgroundColor: theme.colors.elevation.level1,
+                      color: theme.colors.onSurface,
+                    },
+                  ]}
+                  value={balance}
+                  onChangeText={setBalance}
+                  keyboardType="numeric"
+                  placeholderTextColor={theme.colors.outline}
+                />
+              </View>
+
+              <Button mode="contained" buttonColor={appColors.successButton} textColor={theme.colors.onPrimary} onPress={handleSave}>
                 Зберегти
               </Button>
             </>
           ) : (
             <>
-              <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>Назва</Text>
-                <Text style={styles.infoValue}>{bill.name}</Text>
+              <View style={[styles.infoRow, { borderBottomColor: theme.colors.surfaceVariant }]}> 
+                <Text style={[styles.infoLabel, { color: theme.colors.onSurfaceVariant }]}>Назва</Text>
+                <Text style={[styles.infoValue, { color: theme.colors.onSurface }]}>{bill.name}</Text>
               </View>
 
-              <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>Баланс</Text>
-                <Text style={styles.infoValue}>{bill.balance}</Text>
+              <View style={[styles.infoRow, { borderBottomColor: theme.colors.surfaceVariant }]}> 
+                <Text style={[styles.infoLabel, { color: theme.colors.onSurfaceVariant }]}>Баланс</Text>
+                <Text style={[styles.infoValue, { color: theme.colors.onSurface }]}>{bill.balance}</Text>
               </View>
             </>
           )}
@@ -123,15 +147,12 @@ export default function BillDetailsScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#f3f4f6",
   },
   page: {
     flex: 1,
-    backgroundColor: "#f3f4f6",
     padding: 16,
   },
   header: {
-    backgroundColor: "#fff",
     borderRadius: 12,
     paddingVertical: 16,
     paddingHorizontal: 14,
@@ -142,7 +163,6 @@ const styles = StyleSheet.create({
   },
   back: {
     fontSize: 28,
-    color: "#6b7280",
     width: 24,
   },
   headerTitle: {
@@ -157,7 +177,6 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   card: {
-    backgroundColor: "#fff",
     borderRadius: 12,
     padding: 16,
     gap: 14,
@@ -165,15 +184,12 @@ const styles = StyleSheet.create({
   infoRow: {
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: "#eceff1",
     gap: 6,
   },
   infoLabel: {
-    color: "#6b7280",
     fontSize: 16,
   },
   infoValue: {
-    color: "#111827",
     fontSize: 20,
     fontWeight: "600",
   },
@@ -181,17 +197,14 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   label: {
-    color: "#6b7280",
     fontSize: 16,
   },
   input: {
     borderWidth: 1,
-    borderColor: "#d1d5db",
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 16,
-    backgroundColor: "#fff",
   },
   title: {
     fontSize: 24,

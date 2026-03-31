@@ -1,15 +1,15 @@
 import { useRouter } from 'expo-router';
-import React, { useContext } from 'react';
+import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Appbar, List, Switch, useTheme } from 'react-native-paper';
 
-import { ThemeContext } from '../context/ThemeContext';
+import { useAppTheme } from '../context/ThemeContext';
 
 export default function SettingsScreen() {
   const theme = useTheme();
   const router = useRouter();
   
-  const { isDarkTheme, toggleTheme } = useContext(ThemeContext);
+  const { isDarkTheme, toggleTheme } = useAppTheme();
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
