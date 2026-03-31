@@ -1,50 +1,94 @@
-# Welcome to your Expo app 👋
+# WalletMobileApp
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+## Overview
 
-## Get started
+The app provides:
 
-1. Install dependencies
+- Authentication (register, login, session restore).
+- Account (wallet/bill) management.
+- Income and expense transactions with category selection.
+- Dashboard with balance summary and category pie charts.
+- Light/Dark theme toggle.
+- Local-first database using SQLite with Drizzle ORM migrations.
 
-   ```bash
-   npm install
-   ```
+## Main Features
 
-2. Start the app
+- Account CRUD:
+	- Create account with initial balance.
+	- Edit account name and balance.
+	- Delete account.
+- Transaction creation:
+	- Add income.
+	- Add expense (with balance validation).
+	- Assign transactions to accounts and categories.
+- Home dashboard:
+	- Total balance.
+	- Total income and expenses.
+	- Expense pie chart by category.
+	- Income pie chart by category.
+- Fixed bottom quick-action buttons for creating income/expense records.
 
-   ```bash
-   npx expo start
-   ```
+## Tech Stack
 
-In the output, you'll find options to open the app in a
+- Framework: Expo, React Native, Expo Router.
+- Language: TypeScript.
+- UI: React Native Paper, react-native-dropdown-picker.
+- Charts: react-native-gifted-charts.
+- Database: expo-sqlite + Drizzle ORM.
+- Auth/Security: bcryptjs, expo-secure-store.
+- Navigation: React Navigation (via Expo Router).
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Project Structure
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+- `app/` - Route-based screens (Expo Router).
+- `components/` - Reusable UI components and main screen sections.
+- `services/` - Business logic and DB operations (auth, accounts, categories, transactions).
+- `db/` - DB client and schema.
+- `drizzle/` - SQL migrations and migration journal.
+- `context/`, `providers/`, `hooks/` - App state, providers, shared hooks.
 
-## Get a fresh project
+## How to Download
 
-When you're ready, run:
+### 1) Clone the repository
 
 ```bash
-npm run reset-project
+git clone https://github.com/hidanrdn-edu/WalletMobileApp.git
+cd WalletMobileApp
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### 2) Install dependencies
 
-## Learn more
+```bash
+npm install
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+## Running the App
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Start the Expo development server:
 
-## Join the community
+```bash
+npm run start
+```
 
-Join our community of developers creating universal apps.
+Run directly for a platform:
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```bash
+npm run android
+npm run ios
+npm run web
+```
+
+## Available Scripts
+
+- `npm run start` - Start Expo dev server.
+- `npm run android` - Open app on Android.
+- `npm run ios` - Open app on iOS.
+- `npm run web` - Run web target.
+- `npm run lint` - Run ESLint.
+- `npm run reset-project` - Execute project reset script.
+
+## Requirements
+
+- Node.js 18+ recommended.
+- npm 9+ recommended.
+- Expo Go app (or Android/iOS emulator) for mobile testing.
