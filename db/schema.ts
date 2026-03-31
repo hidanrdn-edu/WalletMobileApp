@@ -1,11 +1,15 @@
 import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
 
+import { CurrencyCode } from "@/types/currency";
+
 export const users = sqliteTable("users", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
+  currency: text("currency").$type<CurrencyCode>().notNull().default("UAH"),
+  baseCurrency: text("base_currency").$type<CurrencyCode>().notNull().default("UAH"),
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });

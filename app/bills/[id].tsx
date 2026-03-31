@@ -1,4 +1,6 @@
 import { useBills } from "@/context/bills-context";
+import { useAuth } from "@/providers/AuthProvider";
+import { formatCurrencyValue, getUserCurrency } from "@/types/currency";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
@@ -10,9 +12,11 @@ import { useAppColors } from "@/hooks/useAppColors";
 export default function BillDetailsScreen() {
   const theme = useTheme();
   const appColors = useAppColors();
+  const { currentUser } = useAuth();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { getBillById, updateBill, deleteBill } = useBills();
+  const currencyCode = getUserCurrency(currentUser?.currency);
 
   const billId = Number(id);
   const bill = useMemo(() => getBillById(billId), [billId, getBillById]);
@@ -134,7 +138,9 @@ export default function BillDetailsScreen() {
 
               <View style={[styles.infoRow, { borderBottomColor: theme.colors.surfaceVariant }]}> 
                 <Text style={[styles.infoLabel, { color: theme.colors.onSurfaceVariant }]}>Баланс</Text>
-                <Text style={[styles.infoValue, { color: theme.colors.onSurface }]}>{bill.balance}</Text>
+                <Text style={[styles.infoValue, { color: theme.colors.onSurface }]}> 
+                  {formatCurrencyValue(bill.balance, currencyCode)}
+                </Text>
               </View>
             </>
           )}

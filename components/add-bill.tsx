@@ -1,7 +1,9 @@
 import { useBills } from "@/context/bills-context";
+import { useAuth } from "@/providers/AuthProvider";
+import { formatCurrencyValue, getUserCurrency } from "@/types/currency";
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -22,10 +24,16 @@ export default function AddBillSection() {
   const router = useRouter();
   const theme = useTheme();
   const appColors = useAppColors();
+  const { currentUser } = useAuth();
   const { bills, addBill, refreshBills } = useBills();
   const [name, setName] = useState("");
   const [balance, setBalance] = useState("");
   const [visible, setVisible] = useState(false);
+  const currencyCode = getUserCurrency(currentUser?.currency);
+  const balancePlaceholder = useMemo(
+    () => `Введіть початковий баланс (${currencyCode})`,
+    [currencyCode],
+  );
 
   const showModal = () => setVisible(true);
   const hideModal = () => {
@@ -101,7 +109,9 @@ export default function AddBillSection() {
                   Детальніше
                 </Button>
               </View>
-              <Text style={[styles.billBalance, { color: theme.colors.onSurfaceVariant }]}>{bill.balance} грн.</Text>
+              <Text style={[styles.billBalance, { color: theme.colors.onSurfaceVariant }]}>
+                {formatCurrencyValue(bill.balance, currencyCode)}
+              </Text>
             </View>
           ))}
         </ScrollView>
@@ -151,7 +161,7 @@ export default function AddBillSection() {
                             backgroundColor: theme.colors.elevation.level1,
                           },
                         ]}
-                        placeholder="Введіть початковий баланс"
+                        placeholder={balancePlaceholder}
                         placeholderTextColor={theme.colors.outline}
                         keyboardType="numeric"
                         value={balance}

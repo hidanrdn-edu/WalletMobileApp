@@ -10,12 +10,14 @@ import { useBills } from '@/context/bills-context';
 import { listAccountsByUser } from '@/services/accounts';
 import { listCategoriesByUserAndType } from '@/services/categories';
 import { createTransaction } from '@/services/transactions';
+import { getUserCurrency } from '@/types/currency';
 
 export default function AddIncomeScreen() {
   const router = useRouter();
   const theme = useTheme();
   const colors = useAppColors();
   const { currentUser } = useAuth();
+  const currencyCode = getUserCurrency(currentUser?.currency);
   const { refreshBills } = useBills();
   const { accountId: routeAccountId } = useLocalSearchParams<{ accountId?: string }>();
   const [amount, setAmount] = useState('');
@@ -117,7 +119,7 @@ export default function AddIncomeScreen() {
       </Appbar.Header>
 
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <TextInput label="Сума" value={amount} onChangeText={setAmount} keyboardType="numeric" 
+        <TextInput label={`Сума (${currencyCode})`} value={amount} onChangeText={setAmount} keyboardType="numeric" 
           mode="outlined"activeOutlineColor={colors.income.text} style={styles.input}/>
 
         <View style={{ zIndex: 3000, marginBottom: 20 }}>
