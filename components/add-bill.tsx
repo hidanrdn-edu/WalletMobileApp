@@ -1,6 +1,7 @@
 import { useBills } from "@/context/bills-context";
+import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -17,7 +18,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function AddBillSection() {
   const router = useRouter();
-  const { bills, addBill } = useBills();
+  const { bills, addBill, refreshBills } = useBills();
   const [name, setName] = useState("");
   const [balance, setBalance] = useState("");
   const [visible, setVisible] = useState(false);
@@ -48,6 +49,13 @@ export default function AddBillSection() {
       resetForm();
     }
   }, [visible]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void refreshBills();
+      return undefined;
+    }, [refreshBills]),
+  );
 
   return (
     <SafeAreaView style={styles.safeArea}>

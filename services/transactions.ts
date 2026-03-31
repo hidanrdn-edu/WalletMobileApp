@@ -1,7 +1,7 @@
 import { and, eq, sql } from "drizzle-orm";
 
 import { db } from "@/db/client";
-import { categories, transactions, type Transaction } from "@/db/schema";
+import { accounts, categories, transactions, type Transaction } from "@/db/schema";
 
 export type TransactionInput = {
   accountId: number;
@@ -73,12 +73,38 @@ export async function getTotalIncomeForUser(userId: number): Promise<number> {
 }
 
 export async function createTransaction(userId: number, input: TransactionInput): Promise<void> {
-  await db.insert(transactions).values({
-    userId,
-    accountId: input.accountId,
-    categoryId: input.categoryId,
-    amount: input.amount,
-    type: input.type,
-    description: input.description,
+  await db.transaction(async (tx) => {
+    const [account] = await tx
+      .select({ id: accounts.id, balance: accounts.balance })
+      .from(accounts)
+      .where(and(eq(accounts.id, input.accountId), eq(accounts.userId, userId)))
+      .limit(1);
+
+    if (!account) {
+      throw new Error("Рахунок не знайдено.");
+    }
+
+    if (input.type === "expense" && input.amount > account.balance) {
+      throw new Error("Недостатньо коштів на вибраному рахунку.");
+    }
+
+    await tx.insert(transactions).values({
+      userId,
+      accountId: input.accountId,
+      categoryId: input.categoryId,
+      amount: input.amount,
+      type: input.type,
+      description: input.description,
+    });
+
+    const delta = input.type === "income" ? input.amount : -input.amount;
+
+    await tx
+      .update(accounts)
+      .set({
+        balance: sql`${accounts.balance} + ${delta}`,
+        updatedAt: new Date().toISOString(),
+      })
+      .where(and(eq(accounts.id, input.accountId), eq(accounts.userId, userId)));
   });
 }
