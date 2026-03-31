@@ -87,8 +87,6 @@ export default function SideMenu({ visible, onClose, onLogout, user }: SideMenuP
                 router.push("/bills" as any);
               }}
             />
-            <Drawer.Item icon="format-list-bulleted" label="Транзакції" onPress={onClose} />
-            <Drawer.Item icon="chart-pie" label="Статистика" onPress={onClose} />
           </Drawer.Section>
 
           <Drawer.Section title="Налаштування" showDivider={false}>

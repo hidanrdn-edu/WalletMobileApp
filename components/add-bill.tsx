@@ -89,7 +89,7 @@ export default function AddBillSection() {
                   Детальніше
                 </Button>
               </View>
-              <Text style={styles.billBalance}>{bill.balance}</Text>
+              <Text style={styles.billBalance}>{bill.balance} грн.</Text>
             </View>
           ))}
         </ScrollView>
