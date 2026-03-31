@@ -3,14 +3,19 @@ import { useFocusEffect } from "@react-navigation/native";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { PieChart } from "react-native-gifted-charts";
 import { Card, Icon, Surface, Text, useTheme } from "react-native-paper";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import AppHeader from "@/components/AppHeader";
 import SideMenu from "@/components/SideMenu";
 import type { User } from "@/db/schema";
 import { useAppColors } from "@/hooks/useAppColors";
 import { listAccountsByUser } from "@/services/accounts";
-import { getExpensesByCategory, getTotalExpensesForUser, getTotalIncomeForUser } from "@/services/transactions";
+import {
+  getExpensesByCategory,
+  getIncomeByCategory,
+  getTotalExpensesForUser,
+  getTotalIncomeForUser,
+} from "@/services/transactions";
 import ActionButtons from "./ActionButtons";
 
 type MainScreenProps = {
@@ -28,12 +33,14 @@ const currencyFormatter = new Intl.NumberFormat(undefined, {
 export function MainScreen({ user, onLogout }: MainScreenProps) {
   const theme = useTheme();
   const colors = useAppColors();
+  const insets = useSafeAreaInsets();
   const [menuVisible, setMenuVisible] = useState(false);
   const [data, setData] = useState({
     balance: 0,
     income: 0,
     expense: 0,
     expensesByCategory: [] as { categoryName: string; total: number; color: string }[],
+    incomeByCategory: [] as { categoryName: string; total: number; color: string }[],
   });
 
   const loadData = useCallback(async () => {
@@ -45,10 +52,17 @@ export function MainScreen({ user, onLogout }: MainScreenProps) {
       const totalExpense = await getTotalExpensesForUser(user.id);
 
       const expensesByCategory = await getExpensesByCategory(user.id);
+      const incomeByCategory = await getIncomeByCategory(user.id);
 
-      const chartData = expensesByCategory.map((exp, index) => ({
+      const expenseChartData = expensesByCategory.map((exp, index) => ({
         categoryName: exp.categoryName,
         total: exp.total,
+        color: colors.chart[index % colors.chart.length],
+      }));
+
+      const incomeChartData = incomeByCategory.map((inc, index) => ({
+        categoryName: inc.categoryName,
+        total: inc.total,
         color: colors.chart[index % colors.chart.length],
       }));
 
@@ -56,7 +70,8 @@ export function MainScreen({ user, onLogout }: MainScreenProps) {
         balance: totalBalance,
         income: totalIncome,
         expense: totalExpense,
-        expensesByCategory: chartData,
+        expensesByCategory: expenseChartData,
+        incomeByCategory: incomeChartData,
       });
     } catch (error) {
       console.error("Error loading dashboard data:", error);
@@ -85,6 +100,12 @@ export function MainScreen({ user, onLogout }: MainScreenProps) {
     text: item.categoryName,
   }));
 
+  const incomePieData = data.incomeByCategory.map(item => ({
+    value: item.total,
+    color: item.color,
+    text: item.categoryName,
+  }));
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <AppHeader onOpenMenu={openMenu} />
@@ -92,6 +113,7 @@ export function MainScreen({ user, onLogout }: MainScreenProps) {
 
       <ScrollView
         style={[styles.content, { backgroundColor: theme.colors.background }]}
+        contentContainerStyle={{ paddingBottom: 172 + insets.bottom }}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.hero}>
@@ -190,9 +212,64 @@ export function MainScreen({ user, onLogout }: MainScreenProps) {
             </View>
           </Card.Content>
         </Card>
-        <ActionButtons />
-        <View style={styles.bottomSpacer} />
+
+        <Card style={[styles.chartCard, styles.secondChartCard, { backgroundColor: colors.cardBackground }]} mode="elevated">
+          <Card.Content>
+            <Text variant="titleMedium" style={{ color: theme.colors.onSurface, marginBottom: 16 }}>
+              Діаграма доходів
+            </Text>
+
+            <View style={styles.chartWrapper}>
+              <PieChart
+                donut
+                innerRadius={65}
+                radius={100}
+                data={incomePieData}
+                innerCircleColor={colors.cardBackground}
+                centerLabelComponent={() => (
+                  <View style={styles.chartCenter}>
+                    <Text variant="labelMedium" style={{ color: theme.colors.outline }}>
+                      Всього
+                    </Text>
+                    <Text
+                      variant="titleMedium"
+                      style={{ color: theme.colors.onSurface, fontWeight: "bold" }}
+                    >
+                      {currencyFormatter.format(data.income)}
+                    </Text>
+                  </View>
+                )}
+              />
+            </View>
+
+            <View style={styles.legendContainer}>
+              {incomePieData.map((item, index) => (
+                <View
+                  key={`${item.text}-${index}`}
+                  style={[styles.legendItem, { borderBottomColor: theme.colors.surfaceVariant }]}
+                >
+                  <View style={styles.legendLeft}>
+                    <View style={[styles.colorDot, { backgroundColor: item.color }]} />
+                    <Text variant="bodyMedium" style={{ color: theme.colors.onSurface }}>
+                      {item.text}
+                    </Text>
+                  </View>
+                  <Text
+                    variant="bodyMedium"
+                    style={{ color: theme.colors.onSurfaceVariant, fontWeight: "bold" }}
+                  >
+                    {currencyFormatter.format(item.value)}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </Card.Content>
+        </Card>
       </ScrollView>
+
+      <View style={[styles.fixedActionButtons, { backgroundColor: theme.colors.background }]}>
+        <ActionButtons />
+      </View>
     </SafeAreaView>
   );
 }
@@ -261,6 +338,9 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     elevation: 2,
   },
+  secondChartCard: {
+    marginTop: 16,
+  },
   chartWrapper: {
     alignItems: "center",
     marginVertical: 10,
@@ -289,7 +369,10 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     marginRight: 10,
   },
-  bottomSpacer: {
-    height: 40,
+  fixedActionButtons: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
 });

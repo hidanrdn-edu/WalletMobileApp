@@ -17,6 +17,12 @@ export type ExpenseByCategory = {
   total: number;
 };
 
+export type IncomeByCategory = {
+  categoryId: number;
+  categoryName: string;
+  total: number;
+};
+
 export async function listTransactionsByUser(userId: number): Promise<Transaction[]> {
   return db
     .select()
@@ -40,6 +46,24 @@ export async function getExpensesByCategory(userId: number): Promise<ExpenseByCa
     .groupBy(transactions.categoryId, categories.name);
 
   return results as ExpenseByCategory[];
+}
+
+export async function getIncomeByCategory(userId: number): Promise<IncomeByCategory[]> {
+  const results = await db
+    .select({
+      categoryId: transactions.categoryId,
+      categoryName: categories.name,
+      total: sql<number>`SUM(${transactions.amount})`,
+    })
+    .from(transactions)
+    .innerJoin(categories, eq(transactions.categoryId, categories.id))
+    .where(and(
+      eq(transactions.userId, userId),
+      eq(transactions.type, "income")
+    ))
+    .groupBy(transactions.categoryId, categories.name);
+
+  return results as IncomeByCategory[];
 }
 
 export async function getTotalExpensesForUser(userId: number): Promise<number> {
