@@ -26,16 +26,16 @@ export function MainScreen({ user, onLogout }: MainScreenProps) {
   const colors = useAppColors();
   const [menuVisible, setMenuVisible] = useState(false);
 
-  const monthLabel = "March 2026";
+  const monthLabel = "Квітень 2026";
   const income = 1200;
   const expense = 820;
   const balance = income - expense;
 
   const pieData = [
-    { value: 450, color: colors.chart[0], text: "Rent" },
-    { value: 200, color: colors.chart[1], text: "Food & Drinks" },
-    { value: 50, color: colors.chart[2], text: "Transport" },
-    { value: 120, color: colors.chart[3], text: "Entertainment" },
+    { value: 450, color: colors.chart[0], text: "Оренда" },
+    { value: 200, color: colors.chart[1], text: "Їжа та напої" },
+    { value: 50, color: colors.chart[2], text: "Транспорт" },
+    { value: 120, color: colors.chart[3], text: "Розваги" },
   ];
 
   const openMenu = () => setMenuVisible(true);
@@ -52,13 +52,12 @@ export function MainScreen({ user, onLogout }: MainScreenProps) {
       >
         <View style={styles.hero}>
           <Text style={styles.eyebrow}>Home</Text>
-          <Text style={styles.greeting}>Hello, {user.name}</Text>
-          <Text style={styles.subtitle}>Your Moneyfy main page is ready.</Text>
+          <Text style={styles.greeting}>Вітаю, {user.name}</Text> 
         </View>
 
         <View style={styles.balanceHeader}>
           <Text variant="titleMedium" style={{ color: theme.colors.onSurfaceVariant }}>
-            Balance ({monthLabel})
+            Баланс ({monthLabel})
           </Text>
           <Text variant="displaySmall" style={{ color: theme.colors.onSurface, fontWeight: "bold" }}>
             {currencyFormatter.format(balance)}
@@ -72,7 +71,7 @@ export function MainScreen({ user, onLogout }: MainScreenProps) {
                 <Icon source="arrow-down-left" color={colors.income.icon} size={24} />
               </View>
               <Text variant="labelLarge" style={{ color: theme.colors.onSurfaceVariant }}>
-                Income
+                Доходи
               </Text>
             </View>
             <Text variant="titleLarge" style={[styles.widgetAmount, { color: colors.income.text }]}>
@@ -86,7 +85,7 @@ export function MainScreen({ user, onLogout }: MainScreenProps) {
                 <Icon source="arrow-up-right" color={colors.expense.icon} size={24} />
               </View>
               <Text variant="labelLarge" style={{ color: theme.colors.onSurfaceVariant }}>
-                Expenses
+                Витрати
               </Text>
             </View>
             <Text variant="titleLarge" style={[styles.widgetAmount, { color: colors.expense.text }]}>
@@ -98,7 +97,7 @@ export function MainScreen({ user, onLogout }: MainScreenProps) {
         <Card style={[styles.chartCard, { backgroundColor: colors.cardBackground }]} mode="elevated">
           <Card.Content>
             <Text variant="titleMedium" style={{ color: theme.colors.onSurface, marginBottom: 16 }}>
-              Expense breakdown
+              Діаграма витрат
             </Text>
 
             <View style={styles.chartWrapper}>
@@ -111,7 +110,7 @@ export function MainScreen({ user, onLogout }: MainScreenProps) {
                 centerLabelComponent={() => (
                   <View style={styles.chartCenter}>
                     <Text variant="labelMedium" style={{ color: theme.colors.outline }}>
-                      Total
+                      Всього
                     </Text>
                     <Text
                       variant="titleMedium"
@@ -172,14 +171,14 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     letterSpacing: 1.2,
     textTransform: "uppercase",
-    color: "#ffffffff",
+    color: "rgb(20, 20, 20)",
   },
   greeting: {
     marginTop: 12,
     fontSize: 32,
     lineHeight: 38,
     fontWeight: "800",
-    color: "#ffffffff",
+    color: "rgb(0, 0, 0)",
   },
   subtitle: {
     marginTop: 10,
