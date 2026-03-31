@@ -1,0 +1,55 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1774282267417,
+      "tag": "0000_yummy_princess_powerful",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1774283401096,
+      "tag": "0001_ambiguous_iron_fist",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1774284349373,
+      "tag": "0002_overconfident_thena",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1774285507203,
+      "tag": "0003_goofy_supernaut",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1774363200000,
+      "tag": "0004_auth_password_hash",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1774890000000,
+      "tag": "0005_user_currency",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1774893600000,
+      "tag": "0006_user_base_currency",
+      "breakpoints": true
+    }
+  ]
+}
