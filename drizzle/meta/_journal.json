@@ -36,6 +36,20 @@
       "when": 1774363200000,
       "tag": "0004_auth_password_hash",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1774890000000,
+      "tag": "0005_user_currency",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1774893600000,
+      "tag": "0006_user_base_currency",
+      "breakpoints": true
     }
   ]
 }
