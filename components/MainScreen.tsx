@@ -33,7 +33,7 @@ export function MainScreen({ user, onLogout }: MainScreenProps) {
     balance: 0,
     income: 0,
     expense: 0,
-    expensesByCategory: [] as Array<{ categoryName: string; total: number; color: string }>,
+    expensesByCategory: [] as { categoryName: string; total: number; color: string }[],
   });
 
   const loadData = useCallback(async () => {
@@ -86,7 +86,7 @@ export function MainScreen({ user, onLogout }: MainScreenProps) {
   }));
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <AppHeader onOpenMenu={openMenu} />
       <SideMenu visible={menuVisible} onClose={closeMenu} onLogout={onLogout} user={user} />
 
@@ -95,8 +95,8 @@ export function MainScreen({ user, onLogout }: MainScreenProps) {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.hero}>
-          <Text style={styles.eyebrow}>Home</Text>
-          <Text style={styles.greeting}>Вітаю, {user.name}</Text> 
+          <Text style={[styles.eyebrow, { color: theme.colors.onSurfaceVariant }]}>Home</Text>
+          <Text style={[styles.greeting, { color: theme.colors.onSurface }]}>Вітаю, {user.name}</Text>
         </View>
 
         <View style={styles.balanceHeader}>
@@ -200,7 +200,6 @@ export function MainScreen({ user, onLogout }: MainScreenProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f8fff8",
   },
   content: {
     flex: 1,
@@ -215,20 +214,17 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     letterSpacing: 1.2,
     textTransform: "uppercase",
-    color: "rgb(20, 20, 20)",
   },
   greeting: {
     marginTop: 12,
     fontSize: 32,
     lineHeight: 38,
     fontWeight: "800",
-    color: "rgb(0, 0, 0)",
   },
   subtitle: {
     marginTop: 10,
     fontSize: 16,
     lineHeight: 24,
-    color: "#91bbaeff",
   },
   balanceHeader: {
     alignItems: "center",
@@ -282,7 +278,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
   },
   legendLeft: {
     flexDirection: "row",

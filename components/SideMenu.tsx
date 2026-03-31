@@ -58,13 +58,18 @@ export default function SideMenu({ visible, onClose, onLogout, user }: SideMenuP
             { backgroundColor: theme.colors.surface, transform: [{ translateX: slideAnim }] },
           ]}
         >
-          <View style={[styles.userInfo, { backgroundColor: "#16a34a" }]}>
+          <View
+            style={[
+              styles.userInfo,
+              { backgroundColor: theme.colors.primaryContainer, borderBottomColor: theme.colors.outlineVariant },
+            ]}
+          >
             <Avatar.Icon size={56} icon="account" style={{ backgroundColor: theme.colors.primary }} />
             <View style={styles.userDetails}>
-              <Text variant="titleMedium" style={styles.userName}>
+              <Text variant="titleMedium" style={[styles.userName, { color: theme.colors.onPrimaryContainer }]}>
                 {user.name}
               </Text>
-              <Text variant="bodyMedium" style={{ color: "#ddddddff" }}>
+              <Text variant="bodyMedium" style={{ color: theme.colors.onPrimaryContainer }}>
                 {user.email}
               </Text>
             </View>
@@ -129,7 +134,6 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#ffffffff",
   },
   userDetails: {
     marginTop: 12,

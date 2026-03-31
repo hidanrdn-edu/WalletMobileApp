@@ -13,11 +13,15 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import { Appbar, Button, Modal, Portal } from "react-native-paper";
+import { Appbar, Button, Modal, Portal, useTheme } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+import { useAppColors } from "@/hooks/useAppColors";
 
 export default function AddBillSection() {
   const router = useRouter();
+  const theme = useTheme();
+  const appColors = useAppColors();
   const { bills, addBill, refreshBills } = useBills();
   const [name, setName] = useState("");
   const [balance, setBalance] = useState("");
@@ -58,21 +62,21 @@ export default function AddBillSection() {
   );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.wrapper}>
-        <Appbar.Header style={styles.pageHeader}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.colors.background }]}>
+      <View style={[styles.wrapper, { backgroundColor: theme.colors.background }]}>
+        <Appbar.Header style={[styles.pageHeader, { backgroundColor: theme.colors.background }]}>
           <Appbar.Action icon="arrow-left" onPress={() => router.push("/home" as any)} />
           <Appbar.Content title="Рахунки" />
         </Appbar.Header>
 
         <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-          <View style={styles.container}>
-            <Text style={styles.text}>Рахунки</Text>
+          <View style={[styles.container, { backgroundColor: theme.colors.surface }]}>
+            <Text style={[styles.text, { color: theme.colors.onSurface }]}>Рахунки</Text>
             <Button
               icon="plus"
-              buttonColor="green"
+              buttonColor={theme.colors.primary}
               mode="contained"
-              textColor="white"
+              textColor={theme.colors.onPrimary}
               onPress={showModal}
             >
               Додати
@@ -80,10 +84,10 @@ export default function AddBillSection() {
           </View>
 
           {bills.map((bill) => (
-            <View key={bill.id} style={styles.container}>
+            <View key={bill.id} style={[styles.container, { backgroundColor: theme.colors.surface }]}>
               <View style={styles.billContainer}>
                 <View style={styles.billLeft}>
-                  <Text style={styles.text}>{bill.name}</Text>
+                  <Text style={[styles.text, { color: theme.colors.onSurface }]}>{bill.name}</Text>
                 </View>
                 <Button
                   mode="text"
@@ -97,27 +101,39 @@ export default function AddBillSection() {
                   Детальніше
                 </Button>
               </View>
-              <Text style={styles.billBalance}>{bill.balance} грн.</Text>
+              <Text style={[styles.billBalance, { color: theme.colors.onSurfaceVariant }]}>{bill.balance} грн.</Text>
             </View>
           ))}
         </ScrollView>
 
         <Portal>
-          <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={styles.contentContainer}>
+          <Modal
+            visible={visible}
+            onDismiss={hideModal}
+            contentContainerStyle={[styles.contentContainer, { backgroundColor: theme.colors.surface }]}
+          >
             <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"}>
               <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                 <View>
-                  <Appbar.Header style={styles.modalHeader}>
-                    <Appbar.Content title="Додати рахунок" color="black" />
-                    <Appbar.Action icon="close" onPress={hideModal} color="black" />
+                  <Appbar.Header style={[styles.modalHeader, { backgroundColor: theme.colors.surface }]}>
+                    <Appbar.Content title="Додати рахунок" color={theme.colors.onSurface} />
+                    <Appbar.Action icon="close" onPress={hideModal} color={theme.colors.onSurface} />
                   </Appbar.Header>
 
                   <View style={styles.modalBody}>
                     <View style={styles.modalSection}>
-                      <Text>Назва</Text>
+                      <Text style={{ color: theme.colors.onSurface }}>Назва</Text>
                       <TextInput
-                        style={styles.input}
+                        style={[
+                          styles.input,
+                          {
+                            color: theme.colors.onSurface,
+                            borderColor: theme.colors.outlineVariant,
+                            backgroundColor: theme.colors.elevation.level1,
+                          },
+                        ]}
                         placeholder="Введіть назву рахунку"
+                        placeholderTextColor={theme.colors.outline}
                         value={name}
                         onChangeText={setName}
                         returnKeyType="next"
@@ -125,10 +141,18 @@ export default function AddBillSection() {
                     </View>
 
                     <View style={[styles.modalSection, styles.balanceSection]}>
-                      <Text>Початковий баланс</Text>
+                      <Text style={{ color: theme.colors.onSurface }}>Початковий баланс</Text>
                       <TextInput
-                        style={styles.input}
+                        style={[
+                          styles.input,
+                          {
+                            color: theme.colors.onSurface,
+                            borderColor: theme.colors.outlineVariant,
+                            backgroundColor: theme.colors.elevation.level1,
+                          },
+                        ]}
                         placeholder="Введіть початковий баланс"
+                        placeholderTextColor={theme.colors.outline}
                         keyboardType="numeric"
                         value={balance}
                         onChangeText={setBalance}
@@ -138,9 +162,9 @@ export default function AddBillSection() {
                     </View>
 
                     <Button
-                      buttonColor="green"
+                      buttonColor={appColors.successButton}
                       mode="contained"
-                      textColor="white"
+                      textColor={theme.colors.onPrimary}
                       onPress={handleSubmit}
                     >
                       Створити рахунок
@@ -159,20 +183,15 @@ export default function AddBillSection() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#e2e2e2",
   },
   wrapper: {
     flex: 1,
-    backgroundColor: "#e2e2e2",
   },
-  pageHeader: {
-    backgroundColor: "#ffffff",
-  },
+  pageHeader: {},
   scrollContent: {
     paddingBottom: 24,
   },
   input: {
-    borderColor: "#bfc5cc",
     borderWidth: 1,
     borderRadius: 6,
     padding: 15,
@@ -187,14 +206,12 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   contentContainer: {
-    backgroundColor: "white",
     padding: 20,
     borderRadius: 10,
     width: "88%",
     alignSelf: "center",
   },
   modalHeader: {
-    backgroundColor: "white",
     padding: 0,
     marginBottom: 12,
     height: 56,
@@ -204,7 +221,6 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     padding: 20,
     marginTop: 20,
-    backgroundColor: "white",
     borderRadius: 10,
     gap: 12,
   },
