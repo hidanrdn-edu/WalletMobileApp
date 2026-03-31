@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { PieChart } from "react-native-gifted-charts";
@@ -16,6 +16,7 @@ import {
   getTotalExpensesForUser,
   getTotalIncomeForUser,
 } from "@/services/transactions";
+import { getUserCurrency } from "@/types/currency";
 import ActionButtons from "./ActionButtons";
 
 type MainScreenProps = {
@@ -23,17 +24,21 @@ type MainScreenProps = {
   onLogout: () => void;
 };
 
-const currencyFormatter = new Intl.NumberFormat(undefined, {
-  style: "currency",
-  currency: "UAH",
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
-
 export function MainScreen({ user, onLogout }: MainScreenProps) {
   const theme = useTheme();
   const colors = useAppColors();
   const insets = useSafeAreaInsets();
+  const currencyCode = getUserCurrency(user.currency);
+  const currencyFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat(undefined, {
+        style: "currency",
+        currency: currencyCode,
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }),
+    [currencyCode],
+  );
   const [menuVisible, setMenuVisible] = useState(false);
   const [data, setData] = useState({
     balance: 0,
@@ -108,7 +113,7 @@ export function MainScreen({ user, onLogout }: MainScreenProps) {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <AppHeader onOpenMenu={openMenu} />
+      <AppHeader onOpenMenu={openMenu} onCurrencyChanged={loadData} />
       <SideMenu visible={menuVisible} onClose={closeMenu} onLogout={onLogout} user={user} />
 
       <ScrollView

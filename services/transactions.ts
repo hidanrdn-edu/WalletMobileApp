@@ -2,6 +2,7 @@ import { and, eq, sql } from "drizzle-orm";
 
 import { db } from "@/db/client";
 import { accounts, categories, transactions, type Transaction } from "@/db/schema";
+import { convertAmount, getExchangeRate, getUserCurrencySettings } from "@/services/currency";
 
 export type TransactionInput = {
   accountId: number;
@@ -24,10 +25,23 @@ export type IncomeByCategory = {
 };
 
 export async function listTransactionsByUser(userId: number): Promise<Transaction[]> {
-  return db
+  const userTransactions = await db
     .select()
     .from(transactions)
     .where(eq(transactions.userId, userId));
+
+  const { currency, baseCurrency } = await getUserCurrencySettings(userId);
+
+  if (currency === baseCurrency) {
+    return userTransactions;
+  }
+
+  const rate = await getExchangeRate(baseCurrency, currency);
+
+  return userTransactions.map((item) => ({
+    ...item,
+    amount: Math.round(item.amount * rate * 1_000_000) / 1_000_000,
+  }));
 }
 
 export async function getExpensesByCategory(userId: number): Promise<ExpenseByCategory[]> {
@@ -45,7 +59,19 @@ export async function getExpensesByCategory(userId: number): Promise<ExpenseByCa
     ))
     .groupBy(transactions.categoryId, categories.name);
 
-  return results as ExpenseByCategory[];
+  const typedResults = results as ExpenseByCategory[];
+  const { currency, baseCurrency } = await getUserCurrencySettings(userId);
+
+  if (currency === baseCurrency) {
+    return typedResults;
+  }
+
+  const rate = await getExchangeRate(baseCurrency, currency);
+
+  return typedResults.map((item) => ({
+    ...item,
+    total: Math.round(item.total * rate * 1_000_000) / 1_000_000,
+  }));
 }
 
 export async function getIncomeByCategory(userId: number): Promise<IncomeByCategory[]> {
@@ -63,7 +89,19 @@ export async function getIncomeByCategory(userId: number): Promise<IncomeByCateg
     ))
     .groupBy(transactions.categoryId, categories.name);
 
-  return results as IncomeByCategory[];
+  const typedResults = results as IncomeByCategory[];
+  const { currency, baseCurrency } = await getUserCurrencySettings(userId);
+
+  if (currency === baseCurrency) {
+    return typedResults;
+  }
+
+  const rate = await getExchangeRate(baseCurrency, currency);
+
+  return typedResults.map((item) => ({
+    ...item,
+    total: Math.round(item.total * rate * 1_000_000) / 1_000_000,
+  }));
 }
 
 export async function getTotalExpensesForUser(userId: number): Promise<number> {
@@ -78,7 +116,8 @@ export async function getTotalExpensesForUser(userId: number): Promise<number> {
     ))
     .then(rows => rows[0]?.total ?? 0);
 
-  return result;
+  const { currency, baseCurrency } = await getUserCurrencySettings(userId);
+  return convertAmount(result, baseCurrency, currency);
 }
 
 export async function getTotalIncomeForUser(userId: number): Promise<number> {
@@ -93,10 +132,14 @@ export async function getTotalIncomeForUser(userId: number): Promise<number> {
     ))
     .then(rows => rows[0]?.total ?? 0);
 
-  return result;
+  const { currency, baseCurrency } = await getUserCurrencySettings(userId);
+  return convertAmount(result, baseCurrency, currency);
 }
 
 export async function createTransaction(userId: number, input: TransactionInput): Promise<void> {
+  const { currency, baseCurrency } = await getUserCurrencySettings(userId);
+  const amountInBase = await convertAmount(input.amount, currency, baseCurrency);
+
   await db.transaction(async (tx) => {
     const [account] = await tx
       .select({ id: accounts.id, balance: accounts.balance })
@@ -108,7 +151,7 @@ export async function createTransaction(userId: number, input: TransactionInput)
       throw new Error("Рахунок не знайдено.");
     }
 
-    if (input.type === "expense" && input.amount > account.balance) {
+    if (input.type === "expense" && amountInBase > account.balance) {
       throw new Error("Недостатньо коштів на вибраному рахунку.");
     }
 
@@ -116,12 +159,12 @@ export async function createTransaction(userId: number, input: TransactionInput)
       userId,
       accountId: input.accountId,
       categoryId: input.categoryId,
-      amount: input.amount,
+      amount: amountInBase,
       type: input.type,
       description: input.description,
     });
 
-    const delta = input.type === "income" ? input.amount : -input.amount;
+    const delta = input.type === "income" ? amountInBase : -amountInBase;
 
     await tx
       .update(accounts)
