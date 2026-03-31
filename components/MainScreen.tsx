@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { PieChart } from "react-native-gifted-charts";
 import { Card, Icon, Surface, Text, useTheme } from "react-native-paper";
@@ -10,6 +11,7 @@ import type { User } from "@/db/schema";
 import { useAppColors } from "@/hooks/useAppColors";
 import { listAccountsByUser } from "@/services/accounts";
 import { getExpensesByCategory, getTotalExpensesForUser, getTotalIncomeForUser } from "@/services/transactions";
+import ActionButtons from "./ActionButtons";
 
 type MainScreenProps = {
   user: User;
@@ -27,7 +29,6 @@ export function MainScreen({ user, onLogout }: MainScreenProps) {
   const theme = useTheme();
   const colors = useAppColors();
   const [menuVisible, setMenuVisible] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [data, setData] = useState({
     balance: 0,
     income: 0,
@@ -35,38 +36,39 @@ export function MainScreen({ user, onLogout }: MainScreenProps) {
     expensesByCategory: [] as Array<{ categoryName: string; total: number; color: string }>,
   });
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const userAccounts = await listAccountsByUser(user.id);
-        const totalBalance = userAccounts.reduce((sum, acc) => sum + acc.balance, 0);
+  const loadData = useCallback(async () => {
+    try {
+      const userAccounts = await listAccountsByUser(user.id);
+      const totalBalance = userAccounts.reduce((sum, acc) => sum + acc.balance, 0);
 
-        const totalIncome = await getTotalIncomeForUser(user.id);
-        const totalExpense = await getTotalExpensesForUser(user.id);
+      const totalIncome = await getTotalIncomeForUser(user.id);
+      const totalExpense = await getTotalExpensesForUser(user.id);
 
-        const expensesByCategory = await getExpensesByCategory(user.id);
+      const expensesByCategory = await getExpensesByCategory(user.id);
 
-        const chartData = expensesByCategory.map((exp, index) => ({
-          categoryName: exp.categoryName,
-          total: exp.total,
-          color: colors.chart[index % colors.chart.length],
-        }));
+      const chartData = expensesByCategory.map((exp, index) => ({
+        categoryName: exp.categoryName,
+        total: exp.total,
+        color: colors.chart[index % colors.chart.length],
+      }));
 
-        setData({
-          balance: totalBalance,
-          income: totalIncome,
-          expense: totalExpense,
-          expensesByCategory: chartData,
-        });
-      } catch (error) {
-        console.error("Error loading dashboard data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+      setData({
+        balance: totalBalance,
+        income: totalIncome,
+        expense: totalExpense,
+        expensesByCategory: chartData,
+      });
+    } catch (error) {
+      console.error("Error loading dashboard data:", error);
+    }
+  }, [colors.chart, user.id]);
 
-    loadData();
-  }, [user.id]);
+  useFocusEffect(
+    useCallback(() => {
+      void loadData();
+      return undefined;
+    }, [loadData]),
+  );
 
   const today = new Date();
   const monthLabel = today.toLocaleDateString("uk-UA", {
@@ -188,7 +190,7 @@ export function MainScreen({ user, onLogout }: MainScreenProps) {
             </View>
           </Card.Content>
         </Card>
-
+        <ActionButtons />
         <View style={styles.bottomSpacer} />
       </ScrollView>
     </SafeAreaView>

@@ -1,21 +1,25 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
-import { Appbar, Button, TextInput, useTheme } from 'react-native-paper';
+import { Appbar, Button, HelperText, TextInput, useTheme } from 'react-native-paper';
 
 import { useAppColors } from '../hooks/useAppColors';
-
-import { and, eq } from 'drizzle-orm';
-import { db } from '../db/client';
-import { accounts, categories, transactions } from '../db/schema';
+import { useAuth } from '@/providers/AuthProvider';
+import { useBills } from '@/context/bills-context';
+import { listAccountsByUser } from '@/services/accounts';
+import { listCategoriesByUserAndType } from '@/services/categories';
+import { createTransaction } from '@/services/transactions';
 
 export default function AddExpenseScreen() {
   const router = useRouter();
   const theme = useTheme();
   const colors = useAppColors();
-  const currentUserId = 1; 
+  const { currentUser } = useAuth();
+  const { refreshBills } = useBills();
+  const { accountId: routeAccountId } = useLocalSearchParams<{ accountId?: string }>();
   const [amount, setAmount] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   const [openAccount, setOpenAccount] = useState(false);
   const [accountId, setAccountId] = useState<number | null>(null);
   const [accountItems, setAccountItems] = useState<{label: string, value: number}[]>([]);
@@ -25,56 +29,82 @@ export default function AddExpenseScreen() {
 
   useEffect(() => {
     const fetchData = async () => {
+      if (!currentUser) {
+        return;
+      }
+
       try {
-        const fetchedAccounts = await db
-          .select()
-          .from(accounts)
-          .where(eq(accounts.userId, currentUserId));
+        const fetchedAccounts = await listAccountsByUser(currentUser.id);
         
         setAccountItems(fetchedAccounts.map(acc => ({
-          label: acc.name, 
-          value: acc.id 
+          label: acc.name,
+          value: acc.id
         })));
 
-        const fetchedCategories = await db
-          .select()
-          .from(categories)
-          .where(
-            and(
-              eq(categories.userId, currentUserId),
-              eq(categories.type, 'expense')
-            )
-          );
-          
+        if (routeAccountId) {
+          const parsedAccountId = Number(routeAccountId);
+
+          if (!Number.isNaN(parsedAccountId)) {
+            setAccountId(parsedAccountId);
+          }
+        } else if (fetchedAccounts.length) {
+          setAccountId(fetchedAccounts[0].id);
+        }
+
+        const fetchedCategories = await listCategoriesByUserAndType(currentUser.id, 'expense');
+
         setCategoryItems(fetchedCategories.map(cat => ({
-          label: cat.name, 
-          value: cat.id 
+          label: cat.name,
+          value: cat.id
         })));
+
+        if (fetchedCategories.length) {
+          setCategoryId((prev) => prev ?? fetchedCategories[0].id);
+        }
 
       } catch (error) {
         console.error("Помилка завантаження рахунків/категорій:", error);
       }
     };
 
-    fetchData();
-  }, []);
+    void fetchData();
+  }, [currentUser, routeAccountId]);
 
   const handleSave = async () => {
-    if (!accountId || !categoryId || !amount) return;
+    setErrorMessage('');
+
+    if (!currentUser) {
+      setErrorMessage('Потрібно увійти в акаунт.');
+      return;
+    }
+
+    if (!accountId || !categoryId || !amount) {
+      setErrorMessage('Заповніть всі обовʼязкові поля.');
+      return;
+    }
+
+    const parsedAmount = Number.parseFloat(amount);
+
+    if (Number.isNaN(parsedAmount) || parsedAmount <= 0) {
+      setErrorMessage('Сума повинна бути більше 0.');
+      return;
+    }
 
     try {
-      await db.insert(transactions).values({
-        userId: currentUserId,
-        accountId: accountId,
-        categoryId: categoryId,
-        amount: parseFloat(amount),
-        type: 'expense', 
+      await createTransaction(currentUser.id, {
+        accountId,
+        categoryId,
+        amount: parsedAmount,
+        type: 'expense',
+        description: 'Витрата',
       });
 
-      console.log('Витрату успішно збережено в БД!');
-      router.back(); 
+      await refreshBills();
+
+      router.back();
     } catch (error) {
       console.error("Помилка збереження витрати:", error);
+      setErrorMessage(error instanceof Error ? error.message : 'Не вдалося зберегти витрату.');
     }
   };
 
@@ -109,6 +139,10 @@ export default function AddExpenseScreen() {
             dropDownContainerStyle={{ backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }}
             placeholderStyle={{ color: theme.colors.onSurfaceVariant }} listMode="SCROLLVIEW"/>
         </View>
+
+        <HelperText type="error" visible={Boolean(errorMessage)}>
+          {errorMessage}
+        </HelperText>
       </ScrollView>
 
       <View style={styles.footer}>

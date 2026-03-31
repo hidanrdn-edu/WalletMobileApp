@@ -4,6 +4,7 @@ import * as SecureStore from "expo-secure-store";
 
 import { db, sqliteDb } from "@/db/client";
 import { users, type User } from "@/db/schema";
+import { ensureDefaultCategoriesForUser } from "@/services/categories";
 
 const SESSION_USER_ID_KEY = "userId";
 const BCRYPT_SALT_ROUNDS = 10;
@@ -120,6 +121,8 @@ export async function registerUser(name: string, email: string, password: string
     throw new Error("User registration failed.");
   }
 
+  await ensureDefaultCategoriesForUser(createdUser.id);
+
   await saveSession(createdUser.id);
 
   return createdUser;
@@ -139,6 +142,8 @@ export async function loginUser(email: string, password: string): Promise<User> 
   if (!isPasswordValid) {
     throw new Error("Invalid password.");
   }
+
+  await ensureDefaultCategoriesForUser(user.id);
 
   await saveSession(user.id);
 
@@ -169,6 +174,8 @@ export async function getCurrentUser(): Promise<User | null> {
     await logout();
     return null;
   }
+
+  await ensureDefaultCategoriesForUser(user.id);
 
   return user;
 }

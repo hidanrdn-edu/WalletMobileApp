@@ -15,6 +15,7 @@ type BillsContextType = {
   updateBill: (id: number, bill: BillInput) => Promise<void>;
   deleteBill: (id: number) => Promise<void>;
   getBillById: (id: number) => Bill | undefined;
+  refreshBills: () => Promise<void>;
   isLoading: boolean;
 };
 
@@ -77,8 +78,8 @@ export function BillsProvider({ children }: { children: ReactNode }) {
   }
 
   const value = useMemo(
-    () => ({ bills, addBill, updateBill, deleteBill, getBillById, isLoading }),
-    [bills, isLoading],
+    () => ({ bills, addBill, updateBill, deleteBill, getBillById, refreshBills: loadBills, isLoading }),
+    [bills, isLoading, loadBills],
   );
 
   return <BillsContext.Provider value={value}>{children}</BillsContext.Provider>;
