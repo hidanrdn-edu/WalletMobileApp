@@ -1,160 +1,221 @@
-import { useBills } from '@/context/bills-context'
-import { useRouter } from 'expo-router'
-import React, { useEffect, useState } from 'react'
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
-import DropDownPicker from 'react-native-dropdown-picker'
-import { Appbar, Button, Modal, Portal } from 'react-native-paper'
-
+import { useBills } from "@/context/bills-context";
+import { useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
+import {
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
+import { Appbar, Button, Modal, Portal } from "react-native-paper";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function AddBillSection() {
-    const router = useRouter();
-    const { bills, addBill } = useBills();
-    const [name, setName] = useState('');
-    const [balance, setBalance] = useState('');
+  const router = useRouter();
+  const { bills, addBill } = useBills();
+  const [name, setName] = useState("");
+  const [balance, setBalance] = useState("");
+  const [visible, setVisible] = useState(false);
 
-    const [open, setOpen] = useState(false);
-    const [value, setValue] = useState("готівка");
-    const [items, setItems] = useState([
-        {label: 'Готівка', value: 'готівка'},
-        {label: 'Картка', value: 'картка'},
-        {label: 'Депозит', value: 'депозит'},
-    ]);
+  const showModal = () => setVisible(true);
+  const hideModal = () => {
+    Keyboard.dismiss();
+    setVisible(false);
+  };
 
-    const [openCurrency, setOpenCurrency] = useState(false);
-    const [valueCurrency, setValueCurrency] = useState("грн.");
-    const [itemsCurrency, setItemsCurrency] = useState([
-        {label: 'UAH', value: 'грн.'},
-        {label: 'USD', value: 'дол.'},
-        {label: 'EUR', value: 'єв.'},
-    ]);
+  function resetForm() {
+    setName("");
+    setBalance("");
+  }
 
-    const [visible, setVisible] = useState(false);
+  async function handleSubmit() {
+    await addBill({
+      name,
+      balance: parseFloat(balance) || 0,
+    });
 
-    const showModal = () => setVisible(true);
-    const hideModal = () => setVisible(false);
+    hideModal();
+    resetForm();
+  }
 
-    function resetForm() {
-        setName('');
-        setBalance('');
-        setValue('готівка');
-        setValueCurrency('грн.');
+  useEffect(() => {
+    if (!visible) {
+      resetForm();
     }
-
-    function handleSubmit() {
-        addBill({
-            name: name,
-            type: value,
-            balance: parseFloat(balance) || 0,
-            currency: valueCurrency
-        });
-
-        hideModal();
-        resetForm();
-    }
-
-    useEffect(() => {
-        if (!visible) {
-            resetForm();
-        }
-    }, [visible])
-
-
+  }, [visible]);
 
   return (
-    <View style={styles.wrapper}>
-        <View style={styles.container}>
-        <Text style={styles.text}>Рахунки</Text>
-        <Button icon="plus" buttonColor="green" mode="contained" textColor='white' onPress={showModal}>Додати</Button>
-        </View>
-        {bills.map(bill => (
-            <View key={bill.id} style={[styles.container]}>
-                <Pressable style={styles.billContainer} onPress={() => router.push({ pathname: '/bills/[id]', params: { id: String(bill.id) } })}>
-                    <View style={{gap: 5, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '33%'}}>
-                        <Text style={styles.text}>{bill.name}</Text>
-                        <Text>{bill.type}</Text>
-                    </View>
-                    <Text style={[styles.text, { fontSize: 18 }]}>{bill.balance} {bill.currency}</Text>
-                </Pressable>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.wrapper}>
+        <Appbar.Header style={styles.pageHeader}>
+          <Appbar.Action icon="arrow-left" onPress={() => router.push("/home" as any)} />
+          <Appbar.Content title="Рахунки" />
+        </Appbar.Header>
+
+        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+          <View style={styles.container}>
+            <Text style={styles.text}>Рахунки</Text>
+            <Button
+              icon="plus"
+              buttonColor="green"
+              mode="contained"
+              textColor="white"
+              onPress={showModal}
+            >
+              Додати
+            </Button>
+          </View>
+
+          {bills.map((bill) => (
+            <View key={bill.id} style={styles.container}>
+              <View style={styles.billContainer}>
+                <View style={styles.billLeft}>
+                  <Text style={styles.text}>{bill.name}</Text>
+                </View>
+                <Button
+                  mode="text"
+                  onPress={() =>
+                    router.push({
+                      pathname: "/bills/[id]",
+                      params: { id: String(bill.id) },
+                    })
+                  }
+                >
+                  Детальніше
+                </Button>
+              </View>
+              <Text style={styles.billBalance}>{bill.balance} грн.</Text>
             </View>
-        ))}
+          ))}
+        </ScrollView>
+
         <Portal>
-            <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={styles.contentContainer}>
-                <Appbar.Header style={{ backgroundColor: 'white', padding: 0, marginBottom: 20 }}>
-                    <Appbar.Content title="Додати рахунок" color='black'/>
-                    <Appbar.Action icon="close" onPress={hideModal} color='black'/>
-                </Appbar.Header>
-                <View style={styles.modalSection}>
-                    <Text>Назва</Text>
-                    <TextInput style={styles.input} placeholder='Введіть назву рахунку' value={name} onChangeText={setName}/>
-                </View>
-                <View style={[styles.modalSection, {zIndex: 3000}]}>
-                    <Text>Тип</Text>
-                    <DropDownPicker style={styles.input} open={open} value={value}  items={items} setOpen={setOpen} setValue={setValue} setItems={setItems} placeholder='Оберіть рахунок'/>
-                </View>
-                <View style={[styles.modalSection, styles.balanceSection, {zIndex: 1000}]}>
-                    <View style={{width: '65%', gap: 10}}>
-                        <Text>Початковий баланс</Text>
-                        <TextInput style={styles.input} placeholder='Введіть початковий баланс' keyboardType='numeric' value={balance} onChangeText={setBalance}/>
+          <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={styles.contentContainer}>
+            <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"}>
+              <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <View>
+                  <Appbar.Header style={styles.modalHeader}>
+                    <Appbar.Content title="Додати рахунок" color="black" />
+                    <Appbar.Action icon="close" onPress={hideModal} color="black" />
+                  </Appbar.Header>
+
+                  <View style={styles.modalBody}>
+                    <View style={styles.modalSection}>
+                      <Text>Назва</Text>
+                      <TextInput
+                        style={styles.input}
+                        placeholder="Введіть назву рахунку"
+                        value={name}
+                        onChangeText={setName}
+                        returnKeyType="next"
+                      />
                     </View>
-                    <View style={{width: '30%', gap: 10}}>
-                        <Text>Валюта</Text>
-                        <DropDownPicker style={styles.input} open={openCurrency} value={valueCurrency}  items={itemsCurrency} setOpen={setOpenCurrency} setValue={setValueCurrency} setItems={setItemsCurrency} placeholder='Оберіть валюту'/>
+
+                    <View style={[styles.modalSection, styles.balanceSection]}>
+                      <Text>Початковий баланс</Text>
+                      <TextInput
+                        style={styles.input}
+                        placeholder="Введіть початковий баланс"
+                        keyboardType="numeric"
+                        value={balance}
+                        onChangeText={setBalance}
+                        returnKeyType="done"
+                        onSubmitEditing={Keyboard.dismiss}
+                      />
                     </View>
+
+                    <Button
+                      buttonColor="green"
+                      mode="contained"
+                      textColor="white"
+                      onPress={handleSubmit}
+                    >
+                      Створити рахунок
+                    </Button>
+                  </View>
                 </View>
-                <Button style={{zIndex: 10}} buttonColor='green' mode='contained' textColor='white' onPress={handleSubmit}>Створити рахунок</Button>
-            </Modal>
+              </TouchableWithoutFeedback>
+            </KeyboardAvoidingView>
+          </Modal>
         </Portal>
-    </View>
-  )
+      </View>
+    </SafeAreaView>
+  );
 }
 
-const styles = StyleSheet.create(
-    {
-        input: {
-            borderColor: '#bfc5cc',
-            borderWidth: 1,
-            borderRadius: 6,
-            padding: 15,
-        },
-        modalSection: {
-            marginTop: 10,
-            gap: 10,
-        },
-        balanceSection: {
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            marginBottom: 20,
-            alignItems: 'center',
-        },
-        contentContainer: {
-            backgroundColor: 'white', 
-            padding: 30, 
-            borderRadius: 10,
-            width: '65%',
-            alignSelf: 'center',
-        
-        },
-        wrapper: {
-            flex : 1, 
-            backgroundColor: '#e2e2e2'
-        },
-        container: {
-            width: '90%',
-            alignSelf: 'center',
-            padding: 20,
-            marginTop: 20,
-            backgroundColor: 'white',
-            borderRadius: 10,
-            gap: 20,
-        },
-        text: {
-            fontSize: 26,
-            fontWeight: 'bold',
-        },
-        billContainer: {
-            flexDirection: 'row',
-            justifyContent: 'space-between',   
-            alignItems: 'center',
-        }
-    }
-)
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#e2e2e2",
+  },
+  wrapper: {
+    flex: 1,
+    backgroundColor: "#e2e2e2",
+  },
+  pageHeader: {
+    backgroundColor: "#ffffff",
+  },
+  scrollContent: {
+    paddingBottom: 24,
+  },
+  input: {
+    borderColor: "#bfc5cc",
+    borderWidth: 1,
+    borderRadius: 6,
+    padding: 15,
+  },
+  modalBody: {
+    gap: 8,
+  },
+  modalSection: {
+    gap: 10,
+  },
+  balanceSection: {
+    marginBottom: 8,
+  },
+  contentContainer: {
+    backgroundColor: "white",
+    padding: 20,
+    borderRadius: 10,
+    width: "88%",
+    alignSelf: "center",
+  },
+  modalHeader: {
+    backgroundColor: "white",
+    padding: 0,
+    marginBottom: 12,
+    height: 56,
+  },
+  container: {
+    width: "90%",
+    alignSelf: "center",
+    padding: 20,
+    marginTop: 20,
+    backgroundColor: "white",
+    borderRadius: 10,
+    gap: 12,
+  },
+  text: {
+    fontSize: 26,
+    fontWeight: "bold",
+  },
+  billContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  billLeft: {
+    gap: 5,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  billBalance: {
+    fontSize: 18,
+    fontWeight: "600",
+  },
+});
